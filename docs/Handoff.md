@@ -1,16 +1,18 @@
 # Personal Website Handoff
 
-Updated: August 9, 2026 (skatepark v3.0 "park map", live on `/lab`, pending Nicole's review)
+Updated: August 9, 2026 (skatepark v4.0 "the ride" (3D WebGL), live on `/lab`, pending Nicole's review)
 
 ## Where things stand
 
-`/lab` is now the **park map** edition of the skatepark: the scroll-driven ride became a game-style 3D-feeling map. The track is a winding road drawn on a left-side ground strip (ink casing, white deck, acid dashes, checkered start/finish) that narrows toward the top of the page to fake depth; the board rides it with carve rotation, depth scaling, and a kickflip each time the visitor scrolls past a spot. Each of the three scenes has a skatepark obstacle planted mid-scene on the road as its mark: quarterpipe (Background), rail (Builds), bowl (Outside), each with a numbered flag that lights acid-green and pops a LANDED tag once passed. Map furniture: traffic cones and a funbox beside the road, London skyline (with Eye) at the horizon, drifting clouds, sun, ground grid. A fixed bottom-left HUD shows SPOT 0X/03 plus a ride progress bar. The hero is a game "player card": photo, and rows for player / class / base / status / wins / motto, with a subtle mouse-tilt. Closing line now carries Nicole's ethos: "Life is a game. Try your best, enjoy the ride."
+`/lab` is now **the ride v4.0**: a real 3D world, not a 2D fake. A Three.js scene (esm.sh pin `three@0.170.0`) fills the viewport: sunset gradient sky, drifting faceted clouds, floating torus rings, London skyline, cream ground with grid, and a winding ink road (ribbon mesh, acid dashes, checkered start/finish). A low-poly skateboard (ink deck, acid underside, spinning wheels) rides the road; scroll progress drives its position along the curve with a chase camera, carve roll in turns, and a kickflip each time a new section activates. Content sits in floating cream cards over the world: hero (player card with photo, PLAYER_ROWS), Spot 01 Background, Spot 02 Builds, Spot 03 Outside (tall two-card section), then the finish line outro. HUD bottom-left tracks spot + ride progress. Chrome: top-left brand pill, top-right live London clock.
 
-Content (ROLES, BUILDS, outside prose, languages) is unchanged from the converged version. Footer: "skatepark v3.0". This was built from Nicole's Aug 9 brief (3D spatial gaming style, skateboard on a map, three skatepark-element marks, player-card basic info, chic/energetic/vibrant, minimal text). No WebGL: depth is done with 2D scaling/perspective so text stays crisp and the route stays light. If she wants a true 3D engine version later, that is a separate build.
+**Content additions in v4.0 (Nicole's request):**
+- Background card: added "day to day at algo1" (Diagnose / Design / Test bullets) and "currently honing" chips (cs fundamentals, reading AI-written code, figma + ux craft, experiment design).
+- Builds: each of the six builds now has a "Why it matters" line under the blurb, and won tags carry a Trophy icon.
+- Outside card: PERSON_ROWS (mom of two cats; travel + food; Manus Fellow, still organizing community events; lately chewing on HRI and the trust layer) plus three generated polaroid illustrations (`/images/polaroid-cats.png`, `-travel.png`, `-food.png`, flat sticker style matching the palette; source files in `assets/`).
+- **Sticker wall** (second card in the Outside section): visitors write a thought, it "folds into a paper plane" (Send icon flies off screen via `pkFly` keyframes) and POSTs to **`/api/thoughts`** (new Hono API route). The API rate-limits per IP (5 per 10 min), caps text at 500 chars, and appends to `thoughts.jsonl` in this repo. If a `ZO_API_KEY` secret exists in Settings > Advanced, it also fires `/zo/ask` to email Nicole each thought ("New thought on your sticker wall"). Without the key, thoughts still land in the jsonl file and can be read anytime.
 
-Canonical route: **https://nicolllee.zo.space/lab**
-
-Note: `/` currently holds an older copy of the skatepark (pre-map, footer "v2.0"). It was NOT touched. If Nicole approves v3.0, promote by copying `/lab`'s code into `/` (rename the default export to Home). `/play`, `/work`, `/about`, `/contact` remain deleted; their source is archived in `routes/`.
+Canonical route: **https://nicolllee.zo.space/lab** (public). `/` still holds the older 2D skatepark copy and was NOT touched.
 
 ## How we got here (for context, not to redo)
 
@@ -41,16 +43,15 @@ If any preview route is ever needed again, its history is still recoverable via 
 
 ## Open items for Nicole
 
-- **Approve v3.0 and decide on `/`:** keep `/` on the older v2.0 copy or promote the park map.
-- **Corkboard / personal photos:** decide whether the book, cat, and travel-photo elements from the old Route 03 should come back in some form (e.g. small mementos along the road) or stay dropped.
-- **Per-build detail:** the build stickers show only the short blurb in `BUILDS`. If Nicole wants a longer story or a link (e.g. Basket's writeup) per build, that needs to be designed back in.
-- Unconfirmed, carried over: donna.ai's category framing, Basket's framing (currently a teammate's engineering-first line), Japanese "conversational" level, Tella's "Launched · in beta" line, algo1's 20%/30% engagement/wellbeing numbers, and all dates — pending Nicole's confirmation they're safe to state publicly.
-- v3.0 added a `@media (max-width:760px)` pass (narrow road band, smaller obstacles, single-column builds). Verified via screenshots, not yet walked through with Nicole.
-- The player card uses `/images/nicole-portrait.png`. `/images/nicole-photo.png` is identical content; unused.
+- **Approve v4.0 and decide on `/`:** keep `/` on the old 2D copy or promote the ride.
+- **Sticker wall delivery:** add a `ZO_API_KEY` secret (Settings > Advanced) to get each thought emailed instantly; without it, thoughts accumulate in `thoughts.jsonl` (ask me to read them anytime).
+- **Polaroids are AI illustrations**, not real photos. Swap in real cat/travel/dish photos anytime (replace the three asset files or ask me).
+- Unconfirmed, carried over: Japanese "conversational" level, algo1 framing details, and all dates: pending Nicole's confirmation they are safe to state publicly.
+- WebGL needs a GPU-capable browser; there is no static fallback yet. If the canvas fails to init, the page still shows content cards on the paper background (canvas stays invisible via the `ready` class gate).
 
 ## Design system (current palette)
 
-**Palette (in code as `T`):** Paper `#F1ECE0` · Cream `#EAE2CE` · Ink `#0E0E0E` · Muted `#6B6558` · Flame `#FF3D1A` · Acid `#D6FF3D` · Sky `#4DA3FF` · Navy `#2C3E73` · Yellow `#F1C40F` · White `#FFFDF7`. Sans (Inter/system) for headings and body, monospace for labels/kickers/HUD chrome. (The older Lab Notebook palette below is superseded; the flame/acid set won during the Aug 8 sharpening pass.)
+**Palette (in code as `T`):** Paper `#F4EDDE` · Cream `#EAE2CE` · Ink `#0E0E0E` · Muted `#6B6558` · Flame `#FF3D1A` · Acid `#D6FF3D` · Sky `#4DA3FF` · Navy `#2C3E73` · Yellow `#F1C40F` · White `#FFFDF7`. Sans (Inter/system) for headings and body, monospace for labels/kickers/HUD chrome. (The older Lab Notebook palette below is superseded; the flame/acid set won during the Aug 8 sharpening pass.)
 
 Avoid corporate gray, dark mode, AI gradients, mesh backgrounds, glassmorphism, stock photos, generic hero illustrations.
 
