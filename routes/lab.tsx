@@ -20,9 +20,9 @@ const SPOT_META = [
 ] as const;
 
 const ROLES = [
-  { org: "algo1", role: "Behavioural Scientist", when: "Sep 2025 · now", what: "I own the behavioural layer of the product: work out why shoppers do what they do, design the trolley-tablet interventions that shift it, run A/B tests on real trips, and fold every result into the BeSci Engine.", day: ["Diagnose shopper behavior through interviews, journey mapping, and session data.", "Design interventions for the trolley tablet, timed to where someone is in the store.", "Test ideas on real shopping trips and turn the results into reusable BeSci Engine cards."], taken: ["experiment design", "causal inference", "AI product judgement", "stakeholder storytelling"], honing: ["CS fundamentals", "reading AI-written code", "Figma + UX craft", "experiment design"] },
-  { org: "Applied Behaviour Change", role: "Product + BeSci Associate", when: "2024 · 2025", what: "Behavioural diagnosis, intervention design, and research for health and wellbeing products. Client work from first workshop to shipped change.", day: ["Translate behavioral evidence into product decisions.", "Move from diagnosis and intervention design through to client-ready recommendations."], taken: ["intervention design", "research to product translation", "client-ready evidence"], honing: ["product judgment", "clearer design communication"] },
-  { org: "UCL Centre for Behaviour Change", role: "Research Assistant", when: "2024", what: "Behaviour change intervention ontologies, working with the team that writes the field's standards.", day: ["Structure behavior change techniques and intervention evidence.", "Work carefully with the language and standards that make research reusable."], taken: ["BCTTv1 fluency", "ontology design", "academic rigour"], honing: ["technical fluency", "evidence synthesis"] },
+  { org: "algo1", role: "Behavioural Scientist", when: "Sep 2025 · now", what: "Behavioural science for a hyperpersonalized grocery experience on in-store trolley tablets.", day: ["Diagnose shopper behavior across the store journey and trolley data.", "Design and test personalized interventions for the in-store tablet.", "Turn results into reusable BeSci Engine cards."], honing: ["CS fundamentals", "reading AI-written code", "Figma + UX craft", "experiment design"] },
+  { org: "Applied Behaviour Change", role: "Product + BeSci Associate", when: "2024 · 2025", what: "Behavioral research and intervention design for health and wellbeing products.", day: ["Translate behavioral evidence into product decisions.", "Design interventions and communicate recommendations to clients.", "Connect research, strategy, and delivery."], honing: ["product judgment", "design communication"] },
+  { org: "UCL Centre for Behaviour Change", role: "Research Assistant", when: "2024", what: "Research on behavior change techniques and intervention ontologies.", day: ["Code interventions using BCTTv1.", "Synthesize evidence into reusable structures.", "Work carefully with the standards behind behavior change research."], honing: ["technical fluency", "evidence synthesis"] },
 ];
 
 const BUILDS = [
@@ -733,6 +733,9 @@ export default function Ride() {
         .pk-detail-card .pk-minihead { border-top-color: rgba(214,255,61,.35); color: ${T.acid}; }
         .pk-detail-card .pk-hone span { border-color: ${T.acid}; background: transparent; color: ${T.card}; box-shadow: 2px 2px 0 rgba(214,255,61,.4); }
         .pk-detail-foot { color: rgba(244,237,222,.5); }
+        .pk-detail-card .pk-day { color: rgba(244,237,222,.9); }
+        .pk-detail-card .pk-day li::marker { color: ${T.acid}; }
+        .pk-detail-card .pk-day li { padding-left: 4px; }
         @media (max-width: 760px) {
           .pk-hero-grid { grid-template-columns: 1fr; gap: 30px; }
           .pk-player { order: -1; max-width: 250px; justify-self: start; transform: rotate(1.5deg) scale(.96); transform-origin: left top; }
@@ -818,7 +821,7 @@ export default function Ride() {
                   const sel = detail?.kind === "role" && detail.id === r.org;
                   return (
                     <button className={`pk-role ${sel ? "sel" : ""}`} key={r.org} onClick={() => pick("role", r.org)}>
-                      <div><b>{r.org}</b><span className="r">{r.role}</span></div>
+                      <div><b>{r.role}</b><span className="r">{r.org}</span></div>
                       <span className="pk-role-r"><time>{r.when}</time><span className="pk-role-cue">{sel ? "close" : "detail"}</span></span>
                     </button>
                   );
@@ -910,16 +913,14 @@ export default function Ride() {
             <button className="pk-detail-x" onClick={() => setDetail(null)} aria-label="Close details"><X size={14} /></button>
             {detailRole && (
               <>
-                <div className="pk-kicker">work · experience</div>
-                <h3 className="pk-detail-title">{detailRole.org}</h3>
-                <p className="pk-detail-sub">{detailRole.role} · {detailRole.when}</p>
+                <div className="pk-kicker">{detailRole.org} · work experience</div>
+                <h3 className="pk-detail-title">{detailRole.role}</h3>
+                <p className="pk-detail-sub">{detailRole.org} · {detailRole.when}</p>
                 <p className="pk-detail-body">{detailRole.what}</p>
                 <div className="pk-minihead">day to day</div>
                 <ul className="pk-day">{detailRole.day.map((item) => <li key={item}>{item}</li>)}</ul>
                 <div className="pk-minihead">skills I'm honing</div>
                 <div className="pk-hone">{detailRole.honing.map((s) => <span key={s}>{s}</span>)}</div>
-                <div className="pk-minihead">what I took with me</div>
-                <div className="pk-hone">{detailRole.taken.map((s) => <span key={s}>{s}</span>)}</div>
               </>
             )}
             {detailBuild && (
