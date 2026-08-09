@@ -224,16 +224,25 @@ export default function Ride() {
   const progressRef = useRef(0);
   const flipRef = useRef(0);
   const detailY = useRef(0);
+  const autoOpened = useRef<Set<number>>(new Set());
+  const autoTimer = useRef<number | null>(null);
   const lastProg = useRef(0);
 
-  const pick = (kind: "role" | "build", id: string) => {
-    const next = detail && detail.kind === kind && detail.id === id ? null : { kind, id };
-    setDetail(next);
+  const openDetail = (kind: "role" | "build", id: string) => {
+    setDetail({ kind, id });
     setPeek(false);
-    if (next) {
-      detailY.current = window.scrollY;
-      flipRef.current = performance.now();
+    detailY.current = window.scrollY;
+    flipRef.current = performance.now();
+  };
+
+  const pick = (kind: "role" | "build", id: string) => {
+    const isSame = detail?.kind === kind && detail.id === id;
+    if (isSame) {
+      setDetail(null);
+      setPeek(false);
+      return;
     }
+    openDetail(kind, id);
   };
 
   useEffect(() => { activeRef.current = active; }, [active]);
@@ -255,6 +264,20 @@ export default function Ride() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, [detail]);
+
+  useEffect(() => {
+    if (autoTimer.current) window.clearTimeout(autoTimer.current);
+    if (active !== 1 && active !== 2) return;
+    if (autoOpened.current.has(active)) return;
+    autoTimer.current = window.setTimeout(() => {
+      if (autoOpened.current.has(active)) return;
+      autoOpened.current.add(active);
+      openDetail(active === 1 ? "role" : "build", active === 1 ? "algo1" : "Basket");
+    }, 720);
+    return () => {
+      if (autoTimer.current) window.clearTimeout(autoTimer.current);
+    };
+  }, [active]);
 
   const detailRole = detail?.kind === "role" ? ROLES.find((r) => r.org === detail.id) : null;
   const detailBuild = detail?.kind === "build" ? BUILDS.find((b) => b.name === detail.id) : null;
@@ -934,15 +957,19 @@ export default function Ride() {
                 <div className="pk-kicker">{CATS.find((c) => c.id === detailBuild.cat)?.label}</div>
                 <h3 className="pk-detail-title">{detailBuild.name}</h3>
                 <p className="pk-detail-sub">{detailBuild.tag}</p>
+                <p className="pk-detail-body">{detailBuild.text}</p>
                 {detailBuild.name === "Basket" && (
                   <div className="pk-detail-media" aria-label="Basket project images">
                     <figure><img src="/images/basket-product.png" alt="Basket product interface monitoring a reformulation signal" /><figcaption>the product · reformulation sentinel</figcaption></figure>
+                  </div>
+                )}
+                <div className="pk-minihead">why it matters</div>
+                <p className="pk-detail-body">{detailBuild.why}</p>
+                {detailBuild.name === "Basket" && (
+                  <div className="pk-detail-media pk-detail-media-last" aria-label="Basket team image">
                     <figure><img src="/images/basket-demo.jpg" alt="Nicole and the Basket team presenting the product" /><figcaption>the team · Tokens LDN demo</figcaption></figure>
                   </div>
                 )}
-                <p className="pk-detail-body">{detailBuild.text}</p>
-                <div className="pk-minihead">why it matters</div>
-                <p className="pk-detail-body">{detailBuild.why}</p>
               </>
             )}
             <div className="pk-detail-foot">esc to close</div>
