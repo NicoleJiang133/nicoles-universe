@@ -718,6 +718,12 @@ export default function Ride() {
         .pk-detail-title { margin: 8px 0 3px; padding-right: 30px; font: 900 26px/1.04 ui-sans-serif, Inter, sans-serif; letter-spacing: -.02em; text-transform: uppercase; }
         .pk-detail-sub { margin: 0 0 10px; font-size: 11px; letter-spacing: .075em; text-transform: uppercase; color: ${T.flame}; }
         .pk-detail-body { margin: 0 0 6px; font-size: 16px; line-height: 1.58; color: #26221b; }
+        .pk-detail-media { display: grid; gap: 10px; margin: 14px 0 16px; }
+        .pk-detail-media figure { margin: 0; }
+        .pk-detail-media img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border: 2px solid ${T.ink}; border-radius: 10px; background: ${T.card}; }
+        .pk-detail-media figure:first-child img { aspect-ratio: 4 / 3; object-position: center; }
+        .pk-detail-media figure:last-child img { aspect-ratio: 16 / 9; object-position: center 48%; }
+        .pk-detail-media figcaption { margin-top: 5px; font: 700 10px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .05em; text-transform: uppercase; color: rgba(244,237,222,.62); }
         .pk-detail-foot { margin-top: 14px; font-size: 10px; letter-spacing: .09em; text-transform: uppercase; color: rgba(244,237,222,.5); }
         .has-detail .pk-card.on { transform: scale(.93); opacity: .45; filter: saturate(.85); }
         .has-detail.peek .pk-card.on { transform: none; opacity: 1; filter: none; }
@@ -928,6 +934,12 @@ export default function Ride() {
                 <div className="pk-kicker">{CATS.find((c) => c.id === detailBuild.cat)?.label}</div>
                 <h3 className="pk-detail-title">{detailBuild.name}</h3>
                 <p className="pk-detail-sub">{detailBuild.tag}</p>
+                {detailBuild.name === "Basket" && (
+                  <div className="pk-detail-media" aria-label="Basket project images">
+                    <figure><img src="/images/basket-product.png" alt="Basket product interface monitoring a reformulation signal" /><figcaption>the product · reformulation sentinel</figcaption></figure>
+                    <figure><img src="/images/basket-demo.jpg" alt="Nicole and the Basket team presenting the product" /><figcaption>the team · Tokens LDN demo</figcaption></figure>
+                  </div>
+                )}
                 <p className="pk-detail-body">{detailBuild.text}</p>
                 <div className="pk-minihead">why it matters</div>
                 <p className="pk-detail-body">{detailBuild.why}</p>
