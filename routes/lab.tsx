@@ -98,6 +98,7 @@ const CATS = [
 
 const STOP_LEAD_VH = 0.45;
 const STOP_TRAIL_VH = 0.65;
+const OUTSIDE_STOP_VH = 1;
 
 const PLAYER_ROWS = [
   ["player", "nicole jiang"],
@@ -363,11 +364,15 @@ export default function Ride() {
       const background = sectionRefs.current.background;
       const builds = sectionRefs.current.builds;
       const outside = sectionRefs.current.outside;
+      const outro = sectionRefs.current.outro;
       const backgroundStart = background?.offsetTop ?? Infinity;
       const buildsStart = builds?.offsetTop ?? Infinity;
       const outsideStart = outside?.offsetTop ?? Infinity;
+      const outroStart = outro?.offsetTop ?? Infinity;
       const backgroundStopEnd = backgroundStart + lead + ROLES.length * vh;
       const buildsStopEnd = buildsStart + lead + BUILDS.length * vh;
+      const outsideStopEnd = outsideStart + lead + OUTSIDE_STOP_VH * vh;
+      const outroTrigger = Math.max(outsideStopEnd, outroStart - vh * 0.7);
 
       if (y < backgroundStart) {
         const q = backgroundStart > 0 ? Math.min(1, y / backgroundStart) : 0;
@@ -399,19 +404,27 @@ export default function Ride() {
         const q = Math.min(1, Math.max(0, (y - buildsStopEnd) / Math.max(outsideStart - buildsStopEnd, 1)));
         setRide(SPOT_META[1].t + (SPOT_META[2].t - SPOT_META[1].t) * q);
         clearStop("transit");
-      } else {
-        const outsideLead = lead;
+      } else if (y < outsideStopEnd) {
         const local = y - outsideStart;
-        if (local < outsideLead) {
-          setRide(SPOT_META[2].t);
+        setRide(SPOT_META[2].t);
+        if (local < lead) {
           showAnchor(3);
         } else {
-          setRide(SPOT_META[2].t);
           setPhase("stop");
           setActive(3);
           setDetail(null);
           guidedKey.current = "";
         }
+      } else if (y < outroTrigger) {
+        const q = Math.min(1, Math.max(0, (y - outsideStopEnd) / Math.max(outroTrigger - outsideStopEnd, 1)));
+        setRide(SPOT_META[2].t + (0.996 - SPOT_META[2].t) * q);
+        clearStop("transit");
+      } else {
+        setRide(0.996);
+        setPhase("stop");
+        setActive(4);
+        setDetail(null);
+        guidedKey.current = "";
       }
     };
     onScroll();
@@ -710,11 +723,13 @@ export default function Ride() {
     ? "approaching the next stop"
     : phase === "transit"
       ? "riding to the next stop"
-      : active === 3
-        ? "spot 03/03 · Bowl"
-        : active === 0
-          ? "start line · the skatepark"
-          : `spot ${SPOT_META[active - 1].number}/03 · ${SPOT_META[active - 1].label}`;
+      : active === 4
+        ? "finish line · session complete"
+        : active === 3
+          ? "spot 03/03 · Bowl"
+          : active === 0
+            ? "start line · the skatepark"
+            : `spot ${SPOT_META[active - 1].number}/03 · ${SPOT_META[active - 1].label}`;
 
   return (
     <main className={`pk-page ${detail ? "has-detail" : ""} ${peek ? "peek" : ""}`}>
@@ -915,6 +930,7 @@ export default function Ride() {
         .pk-guided { align-items: flex-start; min-height: 0; padding-top: 9vh; padding-bottom: 9vh; }
         .pk-guided-roles { min-height: calc((3 + ${STOP_LEAD_VH} + ${STOP_TRAIL_VH}) * 100vh); }
         .pk-guided-builds { min-height: calc((${BUILDS.length} + ${STOP_LEAD_VH} + ${STOP_TRAIL_VH}) * 100vh); }
+        .pk-guided-outside { min-height: calc((1 + ${STOP_LEAD_VH} + ${STOP_TRAIL_VH}) * 100vh); }
         .pk-guided .pk-card { position: sticky; top: 9vh; }
         .pk-guided .pk-sec-inner { align-items: flex-start; }
         .pk-guided .pk-kicker::after { content: " · scroll through the station"; color: ${T.flame}; }
@@ -1023,7 +1039,7 @@ export default function Ride() {
           </div>
         </section>
 
-        <section ref={(el) => { sectionRefs.current.outside = el; }} className="pk-sec" id="outside">
+        <section ref={(el) => { sectionRefs.current.outside = el; }} className="pk-sec pk-guided pk-guided-outside" id="outside">
           <div className="pk-sec-inner pk-outside-col">
             <div className={`pk-card ${active === 3 ? "on" : ""}`}>
               <div className="pk-kicker">spot 03 · bowl · {SPOT_META[2].sub}</div>
