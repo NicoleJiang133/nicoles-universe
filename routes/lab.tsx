@@ -595,30 +595,30 @@ export default function Ride() {
         .pk-sec-inner { width: 100%; max-width: 1180px; margin: 0 auto; display: flex; justify-content: flex-end; }
         .pk-card { pointer-events: auto; width: 100%; max-width: 430px; max-height: 86vh; overflow-y: auto; scrollbar-width: thin; border: 3px solid ${T.ink}; border-radius: 22px; background: rgba(255,253,247,.96); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 8px 8px 0 ${T.ink}; padding: 26px 24px 22px; opacity: 0; transform: translateY(26px) scale(.985); transition: opacity .45s ease, transform .45s ease, visibility .45s; visibility: hidden; }
         .pk-card.on { opacity: 1; transform: none; visibility: visible; }
-        .pk-kicker { font: 800 10px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .18em; text-transform: uppercase; color: ${T.flame}; }
+        .pk-kicker { font-size: 11px; letter-spacing: .14em; }
         .pk-card-head { display: flex; align-items: center; gap: 13px; margin: 10px 0 16px; }
         .pk-num { display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; flex: none; border: 3px solid ${T.ink}; border-radius: 50%; background: ${T.acid}; box-shadow: 3px 3px 0 ${T.ink}; font: 800 14px ui-monospace, SFMono-Regular, Menlo, monospace; }
         .pk-card-head h2 { margin: 0; font: 900 clamp(24px, 3.4vw, 34px)/1.02 ui-sans-serif, Inter, sans-serif; letter-spacing: -.03em; text-transform: uppercase; }
-        .pk-card-head .sub { margin: 2px 0 0; font: 800 9px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .14em; text-transform: uppercase; color: ${T.muted}; }
+        .pk-card-head .sub { margin: 2px 0 0; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: ${T.muted}; }
         .pk-card-head svg { margin-left: auto; }
-        .pk-card p { margin: 0 0 12px; font: 14.5px/1.6 ui-sans-serif, Inter, sans-serif; color: #26221b; }
+        .pk-card p { margin: 0 0 12px; font-size: 15.5px; line-height: 1.55; color: #26221b; }
         .pk-card p strong { color: ${T.ink}; }
-        .pk-minihead { margin: 17px 0 8px; border-top: 3px solid ${T.ink}; padding-top: 10px; font: 800 9px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .14em; text-transform: uppercase; color: ${T.flame}; }
-        .pk-day { display: grid; gap: 8px; margin: 0; padding: 0 0 0 16px; font: 13px/1.46 ui-sans-serif, Inter, sans-serif; color: #26221b; }
+        .pk-minihead { margin: 17px 0 8px; border-top: 3px solid ${T.ink}; padding-top: 10px; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: ${T.flame}; }
+        .pk-day { font-size: 15px; line-height: 1.52; }
         .pk-day li::marker { color: ${T.flame}; }
         .pk-day b { font-weight: 900; }
         .pk-hone { display: flex; flex-wrap: wrap; gap: 7px; }
-        .pk-hone span { border: 2px solid ${T.ink}; border-radius: 999px; padding: 6px 9px; background: ${T.acid}; box-shadow: 2px 2px 0 ${T.ink}; font: 800 8px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .06em; text-transform: uppercase; }
+        .pk-hone span { border: 2px solid ${T.ink}; border-radius: 999px; padding: 7px 10px; background: ${T.acid}; box-shadow: 2px 2px 0 ${T.ink}; font-size: 10px; letter-spacing: .045em; text-transform: uppercase; }
         .pk-hone span:nth-child(2n) { background: ${T.card}; }
         .pk-roles { margin-top: 16px; border-top: 3px solid ${T.ink}; }
-        .pk-role { display: flex; justify-content: space-between; align-items: center; gap: 12px; width: 100%; padding: 10px 9px; border: 2px solid transparent; border-bottom: 2px dashed rgba(20,20,20,.22); border-radius: 10px; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; transition: background .15s, border-color .15s; }
+        .pk-role { display: flex; justify-content: space-between; align-items: center; gap: 12px; width: 100%; padding: 12px 10px; border: 2px solid transparent; border-bottom: 2px dashed rgba(20,20,20,.22); border-radius: 10px; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; transition: background .15s, border-color .15s; }
         .pk-role:hover { background: rgba(214,255,61,.3); }
         .pk-role.sel { background: ${T.acid}; border-color: ${T.ink}; box-shadow: 3px 3px 0 ${T.ink}; }
-        .pk-role b { font: 800 14px ui-sans-serif, Inter, sans-serif; }
-        .pk-role .r { display: block; font: 800 9px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .08em; text-transform: uppercase; color: ${T.flame}; }
+        .pk-role b { font-size: 15px; }
+        .pk-role .r { display: block; font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: ${T.flame}; }
         .pk-role-r { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex: none; }
-        .pk-role time { font: 10px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .06em; text-transform: uppercase; color: ${T.muted}; white-space: nowrap; }
-        .pk-role-cue { font: 800 8px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .1em; text-transform: uppercase; color: ${T.flame}; }
+        .pk-role time { font-size: 10.5px; letter-spacing: .04em; text-transform: uppercase; color: ${T.muted}; white-space: nowrap; }
+        .pk-role-cue { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: ${T.flame}; }
         .pk-through { margin-top: 14px; padding: 11px 0 11px 14px; border-left: 6px solid ${T.flame}; font: 700 13.5px/1.5 ui-sans-serif, Inter, sans-serif; }
         .pk-builds { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
         .pk-build { position: relative; display: flex; flex-direction: column; border: 3px solid ${T.ink}; border-radius: 15px; background: ${T.card}; box-shadow: 4px 4px 0 ${T.ink}; padding: 12px 12px 10px; text-align: left; cursor: pointer; transition: transform .15s, box-shadow .15s; overflow: hidden; }
@@ -626,27 +626,27 @@ export default function Ride() {
         .pk-build:nth-child(3n+2)::before { background: ${T.acid}; }
         .pk-build:nth-child(3n)::before { background: ${T.ink}; }
         .pk-build:hover, .pk-build.open { transform: translateY(-3px); box-shadow: 6px 6px 0 ${T.ink}; }
-        .pk-build .tag { display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; font: 800 8px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .09em; text-transform: uppercase; color: ${T.muted}; }
+        .pk-build .tag { display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; font-size: 10px; letter-spacing: .065em; text-transform: uppercase; color: ${T.muted}; }
         .pk-build .tag svg { color: ${T.flame}; flex: none; }
-        .pk-build strong { display: block; margin-top: 6px; font: 800 16px/1.2 ui-sans-serif, Inter, sans-serif; letter-spacing: -.01em; }
-        .pk-build .txt { display: none; margin-top: 7px; font: 12.5px/1.45 ui-sans-serif, Inter, sans-serif; color: #26221b; }
-        .pk-build .txt.why { padding-top: 6px; border-top: 2px dashed rgba(20,20,20,.22); font-size: 12px; color: ${T.muted}; }
+        .pk-build strong { display: block; margin-top: 6px; font-size: 17px; line-height: 1.25; letter-spacing: -.01em; }
+        .pk-build .txt { display: none; margin-top: 7px; font-size: 14px; line-height: 1.5; color: #26221b; }
+        .pk-build .txt.why { padding-top: 6px; border-top: 2px dashed rgba(20,20,20,.22); font-size: 13.5px; color: ${T.muted}; }
         .pk-build.open .txt { display: block; }
-        .pk-build .cue { display: block; margin-top: auto; padding-top: 8px; font: 800 8px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .1em; text-transform: uppercase; color: ${T.flame}; }
-        .pk-builds-note { margin: 0 0 14px; font: 14.5px/1.6 ui-sans-serif, Inter, sans-serif; color: #26221b; }
+        .pk-build .cue { display: block; margin-top: auto; padding-top: 8px; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: ${T.flame}; }
+        .pk-builds-note { margin: 0 0 14px; font-size: 15.5px; line-height: 1.55; color: #26221b; }
         .pk-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
         .pk-chip { display: inline-flex; align-items: center; gap: 7px; border: 3px solid ${T.ink}; border-radius: 999px; padding: 7px 11px; background: ${T.card}; box-shadow: 3px 3px 0 ${T.ink}; font: 800 9px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .07em; text-transform: uppercase; }
         .pk-chip:nth-child(2) { background: ${T.acid}; }
         .pk-chip:nth-child(3) { background: ${T.flame}; color: ${T.card}; }
-        .pk-langs { margin-top: 16px; font: 800 10px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .07em; text-transform: uppercase; color: ${T.muted}; }
+        .pk-langs { font-size: 11px; line-height: 1.45; letter-spacing: .06em; }
         .pk-sec-tall { align-items: flex-start; }
         .pk-outside-col { padding-top: 8vh; }
         .pk-people { margin-top: 15px; display: grid; gap: 9px; }
         .pk-person { display: flex; gap: 10px; align-items: flex-start; }
         .pk-person-ic { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; flex: none; border: 2px solid ${T.ink}; border-radius: 8px; background: ${T.acid}; box-shadow: 2px 2px 0 ${T.ink}; }
         .pk-person:nth-child(2n) .pk-person-ic { background: ${T.flame}; color: ${T.card}; }
-        .pk-person b { display: block; font: 800 13px ui-sans-serif, Inter, sans-serif; }
-        .pk-person span:not(.pk-person-ic) { display: block; font: 12px/1.4 ui-sans-serif, Inter, sans-serif; color: ${T.muted}; }
+        .pk-person b { font-size: 14px; line-height: 1.35; }
+        .pk-person span:not(.pk-person-ic) { font-size: 13px; line-height: 1.45; }
         .pk-polars { display: flex; gap: 10px; margin-top: 16px; }
         .pk-polar { flex: 1; margin: 0; background: #fff; border: 3px solid ${T.ink}; border-radius: 10px; padding: 5px 5px 6px; box-shadow: 4px 4px 0 ${T.ink}; }
         .pk-polar img { display: block; width: 100%; aspect-ratio: 4/5; object-fit: cover; border-radius: 6px; border: 2px solid rgba(20,20,20,.12); }
@@ -674,7 +674,7 @@ export default function Ride() {
         .pk-pill em { font-style: normal; font-weight: 600; letter-spacing: 0; text-transform: none; }
         .pk-hero h1 { margin: 20px 0 0; font: 900 clamp(52px, 8.5vw, 100px)/.9 ui-sans-serif, Inter, system-ui, sans-serif; letter-spacing: -.04em; text-transform: uppercase; }
         .pk-hero h1 .mark { background: linear-gradient(180deg, transparent 60%, ${T.acid} 60%); padding: 0 4px; }
-        .pk-role-line { margin: 14px 0 0; font: 800 16px/1.4 ui-sans-serif, Inter, sans-serif; color: ${T.ink}; text-transform: uppercase; letter-spacing: .02em; }
+        .pk-role-line { margin: 14px 0 0; font-size: 16px; line-height: 1.45; color: ${T.ink}; text-transform: uppercase; letter-spacing: .02em; }
         .pk-role-line b { color: ${T.flame}; }
         .pk-summary { max-width: 500px; margin: 16px 0 0; font: 16px/1.6 ui-sans-serif, Inter, sans-serif; color: #26221b; }
         .pk-cta-row { display: flex; gap: 12px; margin-top: 28px; flex-wrap: wrap; }
@@ -716,9 +716,9 @@ export default function Ride() {
         .pk-detail-x { position: absolute; top: 11px; right: 11px; display: flex; align-items: center; justify-content: center; width: 29px; height: 29px; border: 2px solid ${T.ink}; border-radius: 50%; background: ${T.acid}; box-shadow: 2px 2px 0 ${T.ink}; cursor: pointer; }
         .pk-detail-x:hover { background: ${T.flame}; color: ${T.card}; }
         .pk-detail-title { margin: 8px 0 3px; padding-right: 30px; font: 900 26px/1.04 ui-sans-serif, Inter, sans-serif; letter-spacing: -.02em; text-transform: uppercase; }
-        .pk-detail-sub { margin: 0 0 10px; font: 800 9.5px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .1em; text-transform: uppercase; color: ${T.flame}; }
-        .pk-detail-body { margin: 0 0 6px; font: 13.5px/1.55 ui-sans-serif, Inter, sans-serif; color: #26221b; }
-        .pk-detail-foot { margin-top: 14px; font: 800 8px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .12em; text-transform: uppercase; color: ${T.muted}; }
+        .pk-detail-sub { margin: 0 0 10px; font-size: 11px; letter-spacing: .075em; text-transform: uppercase; color: ${T.flame}; }
+        .pk-detail-body { margin: 0 0 6px; font-size: 16px; line-height: 1.58; color: #26221b; }
+        .pk-detail-foot { margin-top: 14px; font-size: 10px; letter-spacing: .09em; text-transform: uppercase; color: rgba(244,237,222,.5); }
         .has-detail .pk-card.on { transform: scale(.93); opacity: .45; filter: saturate(.85); }
         .has-detail.peek .pk-card.on { transform: none; opacity: 1; filter: none; }
         .has-detail .pk-collapsible { display: none; }
@@ -749,6 +749,15 @@ export default function Ride() {
           .has-detail.peek .pk-detail { opacity: 1; transform: none; }
           .has-detail.peek .pk-detail-card { transform: none; opacity: 1; }
           @keyframes pkDetailInM { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+          .pk-card p, .pk-builds-note { font-size: 15px; }
+          .pk-detail-body { font-size: 15.5px; line-height: 1.55; }
+          .pk-role b { font-size: 14.5px; }
+          .pk-role .r, .pk-role time { font-size: 10px; }
+          .pk-build strong { font-size: 16px; }
+          .pk-day { font-size: 14.5px; }
+          .pk-person b { font-size: 13.5px; }
+          .pk-person span:not(.pk-person-ic) { font-size: 12.5px; }
+          .pk-langs { font-size: 10px; }
         }
       `}} />
 
