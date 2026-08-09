@@ -915,10 +915,15 @@ export default function Ride() {
         }
         .pk-guided { align-items: flex-start; min-height: 0; padding-top: 9vh; padding-bottom: 9vh; }
         .pk-guided-roles { min-height: calc((3 + ${STOP_LEAD_VH} + ${STOP_TRAIL_VH}) * 100vh); }
-        .pk-guided-builds { min-height: calc((6 + ${STOP_LEAD_VH} + ${STOP_TRAIL_VH}) * 100vh); }
+        .pk-guided-builds { min-height: calc((${BUILDS.length} + ${STOP_LEAD_VH} + ${STOP_TRAIL_VH}) * 100vh); }
         .pk-guided .pk-card { position: sticky; top: 9vh; }
         .pk-guided .pk-sec-inner { align-items: flex-start; }
         .pk-guided .pk-kicker::after { content: " · scroll through the station"; color: ${T.flame}; }
+        @media (min-width: 761px) {
+          .pk-sec .pk-card.on { position: fixed; right: 5vw; top: 50%; z-index: 12; margin: 0; transform: translateY(-50%); }
+          .has-detail .pk-sec .pk-card.on { transform: translateY(-50%) scale(.93); }
+          .has-detail.peek .pk-sec .pk-card.on { transform: translateY(-50%); }
+        }
       `}} />
 
       <canvas ref={canvasRef} className={`pk-canvas ${ready ? "ready" : ""}`} aria-hidden="true" />
