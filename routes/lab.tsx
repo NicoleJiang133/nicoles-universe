@@ -223,16 +223,17 @@ export default function Ride() {
   const activeRef = useRef(0);
   const progressRef = useRef(0);
   const flipRef = useRef(0);
-  const detailY = useRef(0);
-  const autoOpened = useRef<Set<number>>(new Set());
-  const autoTimer = useRef<number | null>(null);
-  const lastProg = useRef(0);
+  const guidedKey = useRef("");
+  const snapTimer = useRef<number | null>(null);
 
   const openDetail = (kind: "role" | "build", id: string) => {
+    const key = `${kind}:${id}`;
+    if (guidedKey.current !== key) {
+      guidedKey.current = key;
+      flipRef.current = performance.now();
+    }
     setDetail({ kind, id });
     setPeek(false);
-    detailY.current = window.scrollY;
-    flipRef.current = performance.now();
   };
 
   const pick = (kind: "role" | "build", id: string) => {
@@ -240,6 +241,7 @@ export default function Ride() {
     if (isSame) {
       setDetail(null);
       setPeek(false);
+      guidedKey.current = "manual-close";
       return;
     }
     openDetail(kind, id);
@@ -253,34 +255,10 @@ export default function Ride() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  useEffect(() => {
-    if (!detail) return;
-    const onScroll = () => {
-      if (Math.abs(window.scrollY - detailY.current) > 120) {
-        setDetail(null);
-        setPeek(false);
-      }
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [detail]);
-
-  useEffect(() => {
-    if (autoTimer.current) window.clearTimeout(autoTimer.current);
-    if (active !== 1 && active !== 2) return;
-    if (autoOpened.current.has(active)) return;
-    autoTimer.current = window.setTimeout(() => {
-      if (autoOpened.current.has(active)) return;
-      autoOpened.current.add(active);
-      openDetail(active === 1 ? "role" : "build", active === 1 ? "algo1" : "Basket");
-    }, 720);
-    return () => {
-      if (autoTimer.current) window.clearTimeout(autoTimer.current);
-    };
-  }, [active]);
-
   const detailRole = detail?.kind === "role" ? ROLES.find((r) => r.org === detail.id) : null;
   const detailBuild = detail?.kind === "build" ? BUILDS.find((b) => b.name === detail.id) : null;
+  const detailStep = detailRole ? ROLES.findIndex((r) => r.org === detailRole.org) + 1 : detailBuild ? BUILDS.findIndex((b) => b.name === detailBuild.name) + 1 : 0;
+  const detailTotal = detailRole ? ROLES.length : detailBuild ? BUILDS.length : 0;
 
   useEffect(() => {
     const onScroll = () => {
@@ -292,11 +270,29 @@ export default function Ride() {
       let idx = 0;
       SPOT_META.forEach((s, i) => {
         const el = sectionRefs.current[s.id];
-        if (el && el.offsetTop <= mid) idx = i + 1;
+        if (el && el.offsetTop <= mid && mid < el.offsetTop + el.offsetHeight) idx = i + 1;
       });
       const outro = sectionRefs.current.outro;
       if (outro && outro.offsetTop <= mid) idx = 4;
       setActive(idx);
+
+      if (idx === 1 || idx === 2) {
+        const station = sectionRefs.current[SPOT_META[idx - 1].id];
+        if (station) {
+          const items = idx === 1 ? ROLES : BUILDS;
+          const chapter = Math.min(items.length - 1, Math.max(0, Math.floor((window.scrollY - station.offsetTop) / Math.max(window.innerHeight, 1))));
+          const item = items[chapter];
+          openDetail(idx === 1 ? "role" : "build", idx === 1 ? (item as typeof ROLES[number]).org : (item as typeof BUILDS[number]).name);
+          if (snapTimer.current) window.clearTimeout(snapTimer.current);
+          snapTimer.current = window.setTimeout(() => {
+            const target = station.offsetTop + chapter * window.innerHeight;
+            if (Math.abs(window.scrollY - target) > 24) window.scrollTo({ top: target, behavior: "smooth" });
+          }, 360);
+        }
+      } else if (snapTimer.current) {
+        window.clearTimeout(snapTimer.current);
+        snapTimer.current = null;
+      }
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -791,6 +787,12 @@ export default function Ride() {
           .pk-person span:not(.pk-person-ic) { font-size: 12.5px; }
           .pk-langs { font-size: 10px; }
         }
+        .pk-guided { align-items: flex-start; min-height: 0; padding-top: 9vh; padding-bottom: 9vh; }
+        .pk-guided-roles { min-height: calc(3 * 100vh); }
+        .pk-guided-builds { min-height: calc(6 * 100vh); }
+        .pk-guided .pk-card { position: sticky; top: 9vh; }
+        .pk-guided .pk-sec-inner { align-items: flex-start; }
+        .pk-guided .pk-kicker::after { content: " · scroll through the station"; color: ${T.flame}; }
       `}} />
 
       <canvas ref={canvasRef} className={`pk-canvas ${ready ? "ready" : ""}`} aria-hidden="true" />
@@ -836,7 +838,7 @@ export default function Ride() {
           <div className={`pk-hint ${active === 0 ? "" : "gone"}`}><ArrowDown size={14} /> scroll to ride</div>
         </section>
 
-        <section ref={(el) => { sectionRefs.current.background = el; }} className="pk-sec" id="background">
+        <section ref={(el) => { sectionRefs.current.background = el; }} className="pk-sec pk-guided pk-guided-roles" id="background">
           <div className="pk-sec-inner">
             <div className={`pk-card ${active === 1 ? "on" : ""}`} onMouseEnter={() => detail && setPeek(true)} onMouseLeave={() => setPeek(false)}>
               <div className="pk-kicker">spot 01 · quarterpipe · {SPOT_META[0].sub}</div>
@@ -860,7 +862,7 @@ export default function Ride() {
           </div>
         </section>
 
-        <section ref={(el) => { sectionRefs.current.builds = el; }} className="pk-sec" id="builds">
+        <section ref={(el) => { sectionRefs.current.builds = el; }} className="pk-sec pk-guided pk-guided-builds" id="builds">
           <div className="pk-sec-inner">
             <div className={`pk-card ${active === 2 ? "on" : ""}`} onMouseEnter={() => detail && setPeek(true)} onMouseLeave={() => setPeek(false)}>
               <div className="pk-kicker">spot 02 · rail · {SPOT_META[1].sub}</div>
@@ -972,7 +974,7 @@ export default function Ride() {
                 )}
               </>
             )}
-            <div className="pk-detail-foot">esc to close</div>
+            <div className="pk-detail-foot">{detailStep}/{detailTotal} · scroll for next · esc to close</div>
           </div>
         </aside>
       )}
