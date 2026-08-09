@@ -280,7 +280,7 @@ export default function Ride() {
   const [ready, setReady] = useState(false);
   const [detail, setDetail] = useState<{ kind: "role" | "build"; id: string } | null>(null);
   const [peek, setPeek] = useState(false);
-  const [phase, setPhase] = useState<"approach" | "stop" | "transit">("approach");
+  const [phase, setPhase] = useState<"approach" | "anchor" | "stop" | "transit">("approach");
   const activeRef = useRef(0);
   const progressRef = useRef(0);
   const rideTargetRef = useRef(0.02);
@@ -347,6 +347,13 @@ export default function Ride() {
         setPhase(nextPhase);
         setActive(0);
       };
+      const showAnchor = (stop: number) => {
+        setDetail(null);
+        setPeek(false);
+        guidedKey.current = "";
+        setPhase("anchor");
+        setActive(stop);
+      };
       const showChapter = (kind: "role" | "build", id: string, index: number) => {
         setPhase("stop");
         setActive(kind === "role" ? 1 : 2);
@@ -370,7 +377,7 @@ export default function Ride() {
         const local = y - backgroundStart;
         setRide(SPOT_META[0].t);
         if (local < lead) {
-          clearStop("approach");
+          showAnchor(1);
         } else {
           const index = Math.min(ROLES.length - 1, Math.max(0, Math.floor((local - lead) / vh)));
           showChapter("role", ROLES[index].org, index);
@@ -383,7 +390,7 @@ export default function Ride() {
         const local = y - buildsStart;
         setRide(SPOT_META[1].t);
         if (local < lead) {
-          clearStop("approach");
+          showAnchor(2);
         } else {
           const index = Math.min(BUILDS.length - 1, Math.max(0, Math.floor((local - lead) / vh)));
           showChapter("build", BUILDS[index].name, index);
@@ -397,7 +404,7 @@ export default function Ride() {
         const local = y - outsideStart;
         if (local < outsideLead) {
           setRide(SPOT_META[2].t);
-          clearStop("approach");
+          showAnchor(3);
         } else {
           setRide(SPOT_META[2].t);
           setPhase("stop");
