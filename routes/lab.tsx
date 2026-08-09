@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "https://esm.sh/three@0.170.0";
-import { ArrowDown, ArrowUpRight, Brain, Camera, Cat, Compass, Gamepad2, Mail, Plane, Send, Target, Trophy, Users, Wrench } from "lucide-react";
+import { ArrowDown, ArrowUpRight, Brain, Camera, Cat, Compass, Gamepad2, Mail, Plane, Target, Trophy, Users, Wrench } from "lucide-react";
 
 const T = {
   paper: "#F4EDDE",
@@ -214,9 +214,6 @@ export default function Ride() {
   const [progress, setProgress] = useState(0);
   const [ready, setReady] = useState(false);
   const [openBuild, setOpenBuild] = useState<string | null>(null);
-  const [thought, setThought] = useState("");
-  const [thoughtFrom, setThoughtFrom] = useState("");
-  const [thoughtState, setThoughtState] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const activeRef = useRef(0);
   const progressRef = useRef(0);
 
@@ -525,22 +522,6 @@ export default function Ride() {
     sectionRefs.current[id]?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const sendThought = async () => {
-    if (!thought.trim() || thoughtState === "sending" || thoughtState === "sent") return;
-    setThoughtState("sending");
-    try {
-      const res = await fetch("/api/thoughts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ text: thought.trim(), from: thoughtFrom.trim() }),
-      });
-      if (!res.ok) throw new Error("failed");
-      setThoughtState("sent");
-    } catch {
-      setThoughtState("error");
-    }
-  };
-
   const hudLabel = active === 0
     ? "start line · the skatepark"
     : active === 4
@@ -610,8 +591,8 @@ export default function Ride() {
         .pk-chip:nth-child(2) { background: ${T.acid}; }
         .pk-chip:nth-child(3) { background: ${T.flame}; color: ${T.card}; }
         .pk-langs { margin-top: 16px; font: 800 10px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .07em; text-transform: uppercase; color: ${T.muted}; }
-        .pk-sec-tall { min-height: 190vh; align-items: flex-start; }
-        .pk-outside-col { flex-direction: column; align-items: flex-end; gap: 22vh; padding-top: 8vh; }
+        .pk-sec-tall { align-items: flex-start; }
+        .pk-outside-col { padding-top: 8vh; }
         .pk-people { margin-top: 15px; display: grid; gap: 9px; }
         .pk-person { display: flex; gap: 10px; align-items: flex-start; }
         .pk-person-ic { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; flex: none; border: 2px solid ${T.ink}; border-radius: 8px; background: ${T.acid}; box-shadow: 2px 2px 0 ${T.ink}; }
@@ -790,7 +771,7 @@ export default function Ride() {
           </div>
         </section>
 
-        <section ref={(el) => { sectionRefs.current.outside = el; }} className="pk-sec pk-sec-tall" id="outside">
+        <section ref={(el) => { sectionRefs.current.outside = el; }} className="pk-sec" id="outside">
           <div className="pk-sec-inner pk-outside-col">
             <div className={`pk-card ${active === 3 ? "on" : ""}`}>
               <div className="pk-kicker">spot 03 · bowl · {SPOT_META[2].sub}</div>
@@ -819,49 +800,6 @@ export default function Ride() {
               </div>
               <p className="pk-langs">中文 · native &nbsp; English · fluent &nbsp; 日本語 · conversational</p>
             </div>
-
-            <div className={`pk-card pk-stick ${active === 3 ? "on" : ""}`}>
-              <div className="pk-kicker">the sticker wall</div>
-              <div className="pk-card-head">
-                <span className="pk-num pk-num-flame"><Send size={16} /></span>
-                <div><p className="sub">leave a mark</p><h2>Drop a thought</h2></div>
-              </div>
-              {thoughtState === "sent" ? (
-                <div className="pk-stick-done">
-                  <p><strong>Sent.</strong> Your note folded itself into a paper plane and it is on its way to me. Thanks for leaving a mark.</p>
-                  <button className="pk-btn pk-btn-ghost" onClick={() => { setThought(""); setThoughtFrom(""); setThoughtState("idle"); }}>write another</button>
-                </div>
-              ) : (
-                <>
-                  <p>Write anything. A thought, a question, a hello. It folds into a paper plane and lands with me.</p>
-                  <textarea
-                    className="pk-note"
-                    placeholder="a thought, a question, a hello..."
-                    value={thought}
-                    maxLength={500}
-                    rows={4}
-                    onChange={(e) => setThought(e.target.value)}
-                  />
-                  <div className="pk-stick-row">
-                    <input
-                      className="pk-from"
-                      placeholder="from (optional)"
-                      value={thoughtFrom}
-                      maxLength={80}
-                      onChange={(e) => setThoughtFrom(e.target.value)}
-                    />
-                    <button className="pk-btn pk-stick-send" onClick={sendThought} disabled={!thought.trim() || thoughtState === "sending"}>
-                      {thoughtState === "sending" ? "folding..." : "fold + send"} <Send size={14} />
-                    </button>
-                  </div>
-                  {thoughtState === "error" && <p className="pk-stick-err">That one did not land. Try again.</p>}
-                </>
-              )}
-            </div>
-
-            {(thoughtState === "sending" || thoughtState === "sent") && (
-              <div className={`pk-plane ${thoughtState !== "idle" ? "fly" : ""}`} aria-hidden="true"><Send size={46} strokeWidth={2.2} /></div>
-            )}
           </div>
         </section>
 
