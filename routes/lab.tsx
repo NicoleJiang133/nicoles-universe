@@ -20,9 +20,9 @@ const SPOT_META = [
 ] as const;
 
 const ROLES = [
-  { org: "algo1", role: "Behavioural Scientist", when: "Sep 2025 · now", what: "I own the behavioural layer of the product: work out why shoppers do what they do, design the trolley-tablet interventions that shift it, run A/B tests on real trips, and fold every result into the BeSci Engine.", taken: ["experiment design", "causal inference", "AI product judgement", "stakeholder storytelling"] },
-  { org: "Applied Behaviour Change", role: "Product + BeSci Associate", when: "2024 · 2025", what: "Behavioural diagnosis, intervention design, and research for health and wellbeing products. Client work from first workshop to shipped change.", taken: ["intervention design", "research to product translation", "client-ready evidence"] },
-  { org: "UCL Centre for Behaviour Change", role: "Research Assistant", when: "2024", what: "Behaviour change intervention ontologies, working with the team that writes the field's standards.", taken: ["BCTTv1 fluency", "ontology design", "academic rigour"] },
+  { org: "algo1", role: "Behavioural Scientist", when: "Sep 2025 · now", what: "I own the behavioural layer of the product: work out why shoppers do what they do, design the trolley-tablet interventions that shift it, run A/B tests on real trips, and fold every result into the BeSci Engine.", day: ["Diagnose shopper behavior through interviews, journey mapping, and session data.", "Design interventions for the trolley tablet, timed to where someone is in the store.", "Test ideas on real shopping trips and turn the results into reusable BeSci Engine cards."], taken: ["experiment design", "causal inference", "AI product judgement", "stakeholder storytelling"], honing: ["CS fundamentals", "reading AI-written code", "Figma + UX craft", "experiment design"] },
+  { org: "Applied Behaviour Change", role: "Product + BeSci Associate", when: "2024 · 2025", what: "Behavioural diagnosis, intervention design, and research for health and wellbeing products. Client work from first workshop to shipped change.", day: ["Translate behavioral evidence into product decisions.", "Move from diagnosis and intervention design through to client-ready recommendations."], taken: ["intervention design", "research to product translation", "client-ready evidence"], honing: ["product judgment", "clearer design communication"] },
+  { org: "UCL Centre for Behaviour Change", role: "Research Assistant", when: "2024", what: "Behaviour change intervention ontologies, working with the team that writes the field's standards.", day: ["Structure behavior change techniques and intervention evidence.", "Work carefully with the language and standards that make research reusable."], taken: ["BCTTv1 fluency", "ontology design", "academic rigour"], honing: ["technical fluency", "evidence synthesis"] },
 ];
 
 const BUILDS = [
@@ -219,16 +219,21 @@ export default function Ride() {
   const [progress, setProgress] = useState(0);
   const [ready, setReady] = useState(false);
   const [detail, setDetail] = useState<{ kind: "role" | "build"; id: string } | null>(null);
+  const [peek, setPeek] = useState(false);
   const activeRef = useRef(0);
   const progressRef = useRef(0);
   const flipRef = useRef(0);
+  const detailY = useRef(0);
+  const lastProg = useRef(0);
 
   const pick = (kind: "role" | "build", id: string) => {
-    setDetail((d) => {
-      const next = d && d.kind === kind && d.id === id ? null : { kind, id };
-      if (next) flipRef.current = performance.now();
-      return next;
-    });
+    const next = detail && detail.kind === kind && detail.id === id ? null : { kind, id };
+    setDetail(next);
+    setPeek(false);
+    if (next) {
+      detailY.current = window.scrollY;
+      flipRef.current = performance.now();
+    }
   };
 
   useEffect(() => { activeRef.current = active; }, [active]);
@@ -238,6 +243,18 @@ export default function Ride() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+
+  useEffect(() => {
+    if (!detail) return;
+    const onScroll = () => {
+      if (Math.abs(window.scrollY - detailY.current) > 120) {
+        setDetail(null);
+        setPeek(false);
+      }
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [detail]);
 
   const detailRole = detail?.kind === "role" ? ROLES.find((r) => r.org === detail.id) : null;
   const detailBuild = detail?.kind === "build" ? BUILDS.find((b) => b.name === detail.id) : null;
@@ -556,7 +573,7 @@ export default function Ride() {
       : `spot ${SPOT_META[active - 1].number}/03 · ${SPOT_META[active - 1].label}`;
 
   return (
-    <main className="pk-page">
+    <main className={`pk-page ${detail ? "has-detail" : ""} ${peek ? "peek" : ""}`}>
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes pkFadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
         @keyframes pkPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,61,26,.35); } 50% { box-shadow: 0 0 0 9px rgba(255,61,26,0); } }
@@ -702,6 +719,20 @@ export default function Ride() {
         .pk-detail-sub { margin: 0 0 10px; font: 800 9.5px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .1em; text-transform: uppercase; color: ${T.flame}; }
         .pk-detail-body { margin: 0 0 6px; font: 13.5px/1.55 ui-sans-serif, Inter, sans-serif; color: #26221b; }
         .pk-detail-foot { margin-top: 14px; font: 800 8px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .12em; text-transform: uppercase; color: ${T.muted}; }
+        .has-detail .pk-card.on { transform: scale(.93); opacity: .45; filter: saturate(.85); }
+        .has-detail.peek .pk-card.on { transform: none; opacity: 1; filter: none; }
+        .has-detail .pk-collapsible { display: none; }
+        .pk-detail { width: min(470px, 46vw); transition: opacity .3s ease, transform .3s ease; }
+        .has-detail.peek .pk-detail { opacity: .55; transform: translateY(-50%) scale(.97); }
+        .pk-detail-card { background: rgba(20,20,20,.94); border-color: ${T.ink}; box-shadow: 10px 10px 0 ${T.flame}; transition: transform .3s ease, opacity .3s ease; }
+        .has-detail.peek .pk-detail-card { transform: scale(.96); opacity: .6; }
+        .pk-detail-card .pk-kicker { color: ${T.acid}; }
+        .pk-detail-title { color: ${T.card}; }
+        .pk-detail-sub { color: ${T.acid}; }
+        .pk-detail-body { color: rgba(244,237,222,.88); }
+        .pk-detail-card .pk-minihead { border-top-color: rgba(214,255,61,.35); color: ${T.acid}; }
+        .pk-detail-card .pk-hone span { border-color: ${T.acid}; background: transparent; color: ${T.card}; box-shadow: 2px 2px 0 rgba(214,255,61,.4); }
+        .pk-detail-foot { color: rgba(244,237,222,.5); }
         @media (max-width: 760px) {
           .pk-hero-grid { grid-template-columns: 1fr; gap: 30px; }
           .pk-player { order: -1; max-width: 250px; justify-self: start; transform: rotate(1.5deg) scale(.96); transform-origin: left top; }
@@ -714,6 +745,9 @@ export default function Ride() {
           .pk-hud-bar { width: 56px; }
           .pk-detail { left: 12px; right: 12px; bottom: 14px; top: auto; width: auto; transform: none; }
           .pk-detail-card { max-height: 46vh; animation: pkDetailInM .28s ease both; }
+          .has-detail .pk-card.on { transform: none; opacity: 1; filter: none; }
+          .has-detail.peek .pk-detail { opacity: 1; transform: none; }
+          .has-detail.peek .pk-detail-card { transform: none; opacity: 1; }
           @keyframes pkDetailInM { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
         }
       `}} />
@@ -763,15 +797,13 @@ export default function Ride() {
 
         <section ref={(el) => { sectionRefs.current.background = el; }} className="pk-sec" id="background">
           <div className="pk-sec-inner">
-            <div className={`pk-card ${active === 1 ? "on" : ""}`}>
+            <div className={`pk-card ${active === 1 ? "on" : ""}`} onMouseEnter={() => detail && setPeek(true)} onMouseLeave={() => setPeek(false)}>
               <div className="pk-kicker">spot 01 · quarterpipe · {SPOT_META[0].sub}</div>
               <div className="pk-card-head">
                 <span className="pk-num">01</span>
                 <div><p className="sub">{SPOT_META[0].label}</p><h2>{SPOT_META[0].title}</h2></div>
                 <Brain size={26} strokeWidth={2} />
               </div>
-              <p>I'm a behavioural scientist at <strong>algo1</strong>, an AI startup in London building hyperpersonalized shopping for grocery retail. I work out why shoppers act as they do, then design and test what shifts it.</p>
-              <p>I came in through psychology, not code. The interesting problem is always human before it is technical.</p>
               <div className="pk-roles">
                 {ROLES.map((r) => {
                   const sel = detail?.kind === "role" && detail.id === r.org;
@@ -783,34 +815,20 @@ export default function Ride() {
                   );
                 })}
               </div>
-              <div className="pk-minihead">day to day at algo1</div>
-              <ul className="pk-day">
-                <li><b>Diagnose.</b> Shopper interviews, journey mapping, reading session data for the why behind the buy.</li>
-                <li><b>Design.</b> Interventions for the trolley tablet, timed to where you are in the store.</li>
-                <li><b>Test.</b> A/B experiments on real trips. Every result becomes a reusable card in the BeSci Engine.</li>
-              </ul>
-              <div className="pk-minihead">currently honing</div>
-              <div className="pk-hone">
-                <span>cs fundamentals</span>
-                <span>reading AI-written code</span>
-                <span>figma + ux craft</span>
-                <span>experiment design</span>
-              </div>
-              <div className="pk-through"><strong>The through-line:</strong> every product problem is a behavior problem first.</div>
             </div>
           </div>
         </section>
 
         <section ref={(el) => { sectionRefs.current.builds = el; }} className="pk-sec" id="builds">
           <div className="pk-sec-inner">
-            <div className={`pk-card ${active === 2 ? "on" : ""}`}>
+            <div className={`pk-card ${active === 2 ? "on" : ""}`} onMouseEnter={() => detail && setPeek(true)} onMouseLeave={() => setPeek(false)}>
               <div className="pk-kicker">spot 02 · rail · {SPOT_META[1].sub}</div>
               <div className="pk-card-head">
                 <span className="pk-num">02</span>
                 <div><p className="sub">{SPOT_META[1].label}</p><h2>{SPOT_META[1].title}</h2></div>
                 <Wrench size={26} strokeWidth={2} />
               </div>
-              <p className="pk-builds-note">Weekend builds and hackathon sprints. Three of these won. Tap one and the detail bay opens on the left.</p>
+              <p className="pk-builds-note pk-collapsible">Weekend builds and hackathon sprints. Three of these won. Tap one and the detail bay opens on the left.</p>
               {CATS.map((c) => (
                 <div className="pk-shelf" key={c.id}>
                   <div className="pk-shelf-head">{c.label}</div>
@@ -887,6 +905,10 @@ export default function Ride() {
                 <h3 className="pk-detail-title">{detailRole.org}</h3>
                 <p className="pk-detail-sub">{detailRole.role} · {detailRole.when}</p>
                 <p className="pk-detail-body">{detailRole.what}</p>
+                <div className="pk-minihead">day to day</div>
+                <ul className="pk-day">{detailRole.day.map((item) => <li key={item}>{item}</li>)}</ul>
+                <div className="pk-minihead">skills I'm honing</div>
+                <div className="pk-hone">{detailRole.honing.map((s) => <span key={s}>{s}</span>)}</div>
                 <div className="pk-minihead">what I took with me</div>
                 <div className="pk-hone">{detailRole.taken.map((s) => <span key={s}>{s}</span>)}</div>
               </>
