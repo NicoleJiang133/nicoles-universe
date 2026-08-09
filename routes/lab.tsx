@@ -26,18 +26,78 @@ const ROLES = [
 ];
 
 const BUILDS = [
-  { name: "Tella", cat: "software", tag: "Tokens LDN · won", text: "A companion that calls older adults on their landline, remembers their stories, and asks about their grandkids by name. No app, no screen.", why: "Loneliness is a health risk, and most tech ignores people without smartphones. A phone call meets them where they already are." },
-  { name: "Basket", cat: "software", tag: "Tokens LDN · won", text: "Watches recipe videos for comments like \"I swapped the brand\" and warns food companies weeks before the shift shows up in sales.", why: "Brands usually learn about recipe backlash from sales data months later. A few weeks of early warning changes what they can still fix." },
-  { name: "Drift", cat: "software", tag: "AI Tinkerers · won", text: "Watches how you actually work for two weeks, then suggests small automations around your real habits, with a measure of what each one saves.", why: "Most automation advice is generic. Watching how someone actually works first makes the advice worth taking." },
-  { name: "donna.ai", cat: "hardware", tag: "physical AI", text: "Voice plus vision on factory floors and delivery routes. Spots a delay early, calls the customer, and reroutes before anyone complains.", why: "A delay handled before the customer notices is the difference between a kept customer and a lost one." },
-  { name: "EvaOS", cat: "hardware", tag: "physical AI", text: "AI that talks to you while you cook or fix things, hands free. Sees what you see and walks you through the next step.", why: "AI you can use with your hands busy is a different product category, not a smaller screen." },
-  { name: "Mindful Pi", cat: "hardware", tag: "physical AI", text: "A small meditation box that reads your breathing and slows its light until you settle. No screen, and nothing leaves the device.", why: "Meditation apps live on the same device that distracts you. Offline and screenless is the point." },
+  {
+    name: "Tella",
+    cat: "software",
+    tag: "Won · 2 tracks",
+    problem: "Checking on an older relative often assumes a smartphone and an app they will open. The carer cannot call every day, and it is the missed days that matter.",
+    built: "A warm phone conversation that works on any number, including a landline. Tella checks sleep, medication, and food, then scores mood, activity, and nutrition for the carer.",
+    role: "Designed and built the front-end UX/UI in Leap.new for both sides of the experience: the older adult on the call and the carer reading the dashboard.",
+    outcome: "Won Best Use of Leap.new and Best Use of ACI.dev.",
+  },
+  {
+    name: "Basket",
+    cat: "software",
+    tag: "First place · Tokens LDN",
+    problem: "Recipe changes trigger complaints online within days, but sales data can take months to show the damage.",
+    built: "Five AI agents find the recipe change, retrieve and classify complaints, detect the weekly spike, and publish a traceable alert.",
+    role: "Found and pitched the problem, scoped the demo, gave the public pitch, and engineered the Prometheux knowledge-graph classifier that separates a real signal from noise.",
+    outcome: "First place, Tokens LDN Multi-Agent Hackathon, 2026.",
+  },
+  {
+    name: "Drift",
+    cat: "software",
+    tag: "Shortlisted · Team Bento",
+    problem: "Automation tools assume people already know what to automate. The real barrier is activation energy: seeing the friction in your own routines and knowing where to start.",
+    built: "Drift connects to Slack, Gmail, and Notion, learns the workflow, proposes useful automations, and shows the plan on an editable visual canvas.",
+    role: "Team lead end to end: identified the problem, designed and built the front end, and connected the Notion integration.",
+    outcome: "Shortlisted at the Unicorn Mafia To The Americas hackathon with Team Bento.",
+  },
+  {
+    name: "Substrate",
+    cat: "software",
+    tag: "Finalist · 60+ teams",
+    problem: "Coding agents lose shared context between sessions. Teams were pasting specs and plans into Discord and back by hand, burning time and tokens.",
+    built: "An MCP shared context layer with vector search, a knowledge graph, and a resolver that keeps memory compact as agents write to it.",
+    role: "Team lead: defined the problem and design solution, then designed the front end.",
+    outcome: "Finalist at the MongoDB Agent Evolution Hackathon, out of 60+ teams. Demoed at the .local event.",
+  },
+  {
+    name: "donna.ai",
+    cat: "hardware",
+    tag: "Won · Best Use of ElevenLabs",
+    problem: "A frozen delivery-tracking dot creates anxiety. The driver knows what went wrong, but the customer and retailer often find out too late.",
+    built: "A real-time multimodal agent using dashcam vision, voice AI, and live traffic data to connect drivers, customers, and retailers before a delay becomes a complaint.",
+    role: "Identified the pain point, designed the front end for retailers, drivers, and customers, and integrated ElevenLabs.",
+    outcome: "Won Best Use of ElevenLabs at the AI for the Real World Hack.",
+  },
+  {
+    name: "EvaOS",
+    cat: "hardware",
+    tag: "Hardware build",
+    problem: "Physical AI is often closed, expensive, and hard to trust. People should be able to bring their own hardware and choose only the help they need.",
+    built: "An open physical-AI platform. The first proof was a hands-free cycling cap with notes, a teleprompter, and Spotify controls.",
+    role: "Defined the problem, then refined the interaction and hardware ergonomics so the build was something people would want to wear and use.",
+    outcome: "Industry professionals expressed interest in developing the idea further, validating the problem beyond a hackathon demo.",
+  },
+  {
+    name: "Mindful Pi",
+    cat: "hardware",
+    tag: "Won · Overmind track",
+    problem: "Meditation apps ask people to detach from the phone while using the phone. People also hesitate to trust a system that stores intimate mental-health data.",
+    built: "A fully offline Raspberry Pi meditation device with no screen, internet, or connectivity. It generates a personalised session, voice, and soundscape on-device.",
+    role: "Led the behavioral and interaction design: personalisation, pacing, and memory that adapts without feeling like surveillance.",
+    outcome: "Won the Overmind track.",
+  },
 ];
 
 const CATS = [
   { id: "software", label: "Software & AI" },
   { id: "hardware", label: "Hardware & Physical AI" },
 ] as const;
+
+const STOP_LEAD_VH = 0.45;
+const STOP_TRAIL_VH = 0.65;
 
 const PLAYER_ROWS = [
   ["player", "nicole jiang"],
@@ -220,8 +280,10 @@ export default function Ride() {
   const [ready, setReady] = useState(false);
   const [detail, setDetail] = useState<{ kind: "role" | "build"; id: string } | null>(null);
   const [peek, setPeek] = useState(false);
+  const [phase, setPhase] = useState<"approach" | "stop" | "transit">("approach");
   const activeRef = useRef(0);
   const progressRef = useRef(0);
+  const rideTargetRef = useRef(0.02);
   const flipRef = useRef(0);
   const guidedKey = useRef("");
   const snapTimer = useRef<number | null>(null);
@@ -245,6 +307,12 @@ export default function Ride() {
       return;
     }
     openDetail(kind, id);
+    const station = sectionRefs.current[kind === "role" ? "background" : "builds"];
+    const items = kind === "role" ? ROLES : BUILDS;
+    const index = items.findIndex((item) => (kind === "role" ? item.org : item.name) === id);
+    if (station && index >= 0) {
+      window.scrollTo({ top: station.offsetTop + window.innerHeight * (STOP_LEAD_VH + index), behavior: "smooth" });
+    }
   };
 
   useEffect(() => { activeRef.current = active; }, [active]);
@@ -266,32 +334,85 @@ export default function Ride() {
       const p = doc > 0 ? Math.min(Math.max(window.scrollY / doc, 0), 1) : 0;
       progressRef.current = p;
       setProgress(p);
-      const mid = window.scrollY + window.innerHeight * 0.5;
-      let idx = 0;
-      SPOT_META.forEach((s, i) => {
-        const el = sectionRefs.current[s.id];
-        if (el && el.offsetTop <= mid && mid < el.offsetTop + el.offsetHeight) idx = i + 1;
-      });
-      const outro = sectionRefs.current.outro;
-      if (outro && outro.offsetTop <= mid) idx = 4;
-      setActive(idx);
 
-      if (idx === 1 || idx === 2) {
-        const station = sectionRefs.current[SPOT_META[idx - 1].id];
+      const y = window.scrollY;
+      const vh = Math.max(window.innerHeight, 1);
+      const lead = STOP_LEAD_VH * vh;
+      const trail = STOP_TRAIL_VH * vh;
+      const setRide = (target: number) => { rideTargetRef.current = target; };
+      const clearStop = (nextPhase: "approach" | "transit") => {
+        setDetail(null);
+        setPeek(false);
+        guidedKey.current = "";
+        setPhase(nextPhase);
+        setActive(0);
+      };
+      const showChapter = (kind: "role" | "build", id: string, index: number) => {
+        setPhase("stop");
+        setActive(kind === "role" ? 1 : 2);
+        openDetail(kind, id);
+        if (snapTimer.current) window.clearTimeout(snapTimer.current);
+        const station = sectionRefs.current[kind === "role" ? "background" : "builds"];
         if (station) {
-          const items = idx === 1 ? ROLES : BUILDS;
-          const chapter = Math.min(items.length - 1, Math.max(0, Math.floor((window.scrollY - station.offsetTop) / Math.max(window.innerHeight, 1))));
-          const item = items[chapter];
-          openDetail(idx === 1 ? "role" : "build", idx === 1 ? (item as typeof ROLES[number]).org : (item as typeof BUILDS[number]).name);
-          if (snapTimer.current) window.clearTimeout(snapTimer.current);
+          const target = station.offsetTop + lead + index * vh;
           snapTimer.current = window.setTimeout(() => {
-            const target = station.offsetTop + chapter * window.innerHeight;
             if (Math.abs(window.scrollY - target) > 24) window.scrollTo({ top: target, behavior: "smooth" });
-          }, 360);
+          }, 260);
         }
-      } else if (snapTimer.current) {
-        window.clearTimeout(snapTimer.current);
-        snapTimer.current = null;
+      };
+
+      const background = sectionRefs.current.background;
+      const builds = sectionRefs.current.builds;
+      const outside = sectionRefs.current.outside;
+      const backgroundStart = background?.offsetTop ?? Infinity;
+      const buildsStart = builds?.offsetTop ?? Infinity;
+      const outsideStart = outside?.offsetTop ?? Infinity;
+      const backgroundStopEnd = backgroundStart + lead + ROLES.length * vh;
+      const buildsStopEnd = buildsStart + lead + BUILDS.length * vh;
+
+      if (y < backgroundStart) {
+        const q = backgroundStart > 0 ? Math.min(1, y / backgroundStart) : 0;
+        setRide(0.02 + (SPOT_META[0].t - 0.02) * q);
+        clearStop("approach");
+      } else if (y < backgroundStopEnd) {
+        const local = y - backgroundStart;
+        setRide(SPOT_META[0].t);
+        if (local < lead) {
+          clearStop("approach");
+        } else {
+          const index = Math.min(ROLES.length - 1, Math.max(0, Math.floor((local - lead) / vh)));
+          showChapter("role", ROLES[index].org, index);
+        }
+      } else if (y < buildsStart) {
+        const q = Math.min(1, Math.max(0, (y - backgroundStopEnd) / Math.max(buildsStart - backgroundStopEnd, 1)));
+        setRide(SPOT_META[0].t + (SPOT_META[1].t - SPOT_META[0].t) * q);
+        clearStop("transit");
+      } else if (y < buildsStopEnd) {
+        const local = y - buildsStart;
+        setRide(SPOT_META[1].t);
+        if (local < lead) {
+          clearStop("approach");
+        } else {
+          const index = Math.min(BUILDS.length - 1, Math.max(0, Math.floor((local - lead) / vh)));
+          showChapter("build", BUILDS[index].name, index);
+        }
+      } else if (y < outsideStart) {
+        const q = Math.min(1, Math.max(0, (y - buildsStopEnd) / Math.max(outsideStart - buildsStopEnd, 1)));
+        setRide(SPOT_META[1].t + (SPOT_META[2].t - SPOT_META[1].t) * q);
+        clearStop("transit");
+      } else {
+        const outsideLead = lead;
+        const local = y - outsideStart;
+        if (local < outsideLead) {
+          setRide(SPOT_META[2].t);
+          clearStop("approach");
+        } else {
+          setRide(SPOT_META[2].t);
+          setPhase("stop");
+          setActive(3);
+          setDetail(null);
+          guidedKey.current = "";
+        }
       }
     };
     onScroll();
@@ -300,6 +421,7 @@ export default function Ride() {
     return () => {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
+      if (snapTimer.current) window.clearTimeout(snapTimer.current);
     };
   }, []);
 
@@ -508,7 +630,7 @@ export default function Ride() {
     const tick = (nowMs: number) => {
       const dt = Math.min(0.05, (nowMs - last) / 1000);
       last = nowMs;
-      const target = 0.02 + progressRef.current * 0.96;
+      const target = rideTargetRef.current;
       cur += (target - cur) * (1 - Math.pow(0.0001, dt));
 
       const pos = curve.getPointAt(cur);
@@ -585,11 +707,15 @@ export default function Ride() {
     sectionRefs.current[id]?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const hudLabel = active === 0
-    ? "start line · the skatepark"
-    : active === 4
-      ? "finish line · session complete"
-      : `spot ${SPOT_META[active - 1].number}/03 · ${SPOT_META[active - 1].label}`;
+  const hudLabel = phase === "approach"
+    ? "approaching the next stop"
+    : phase === "transit"
+      ? "riding to the next stop"
+      : active === 3
+        ? "spot 03/03 · Bowl"
+        : active === 0
+          ? "start line · the skatepark"
+          : `spot ${SPOT_META[active - 1].number}/03 · ${SPOT_META[active - 1].label}`;
 
   return (
     <main className={`pk-page ${detail ? "has-detail" : ""} ${peek ? "peek" : ""}`}>
@@ -788,8 +914,8 @@ export default function Ride() {
           .pk-langs { font-size: 10px; }
         }
         .pk-guided { align-items: flex-start; min-height: 0; padding-top: 9vh; padding-bottom: 9vh; }
-        .pk-guided-roles { min-height: calc(3 * 100vh); }
-        .pk-guided-builds { min-height: calc(6 * 100vh); }
+        .pk-guided-roles { min-height: calc((3 + ${STOP_LEAD_VH} + ${STOP_TRAIL_VH}) * 100vh); }
+        .pk-guided-builds { min-height: calc((6 + ${STOP_LEAD_VH} + ${STOP_TRAIL_VH}) * 100vh); }
         .pk-guided .pk-card { position: sticky; top: 9vh; }
         .pk-guided .pk-sec-inner { align-items: flex-start; }
         .pk-guided .pk-kicker::after { content: " · scroll through the station"; color: ${T.flame}; }
@@ -871,7 +997,7 @@ export default function Ride() {
                 <div><p className="sub">{SPOT_META[1].label}</p><h2>{SPOT_META[1].title}</h2></div>
                 <Wrench size={26} strokeWidth={2} />
               </div>
-              <p className="pk-builds-note pk-collapsible">Weekend builds and hackathon sprints. Three of these won. Tap one and the detail bay opens on the left.</p>
+              <p className="pk-builds-note pk-collapsible">Seven builds across software, AI, hardware, and physical AI. Select one to read the story.</p>
               {CATS.map((c) => (
                 <div className="pk-shelf" key={c.id}>
                   <div className="pk-shelf-head">{c.label}</div>
@@ -880,7 +1006,7 @@ export default function Ride() {
                       const sel = detail?.kind === "build" && detail.id === b.name;
                       return (
                         <button key={b.name} className={`pk-build ${sel ? "open" : ""}`} onClick={() => pick("build", b.name)}>
-                          <span className="tag">{b.tag.includes("won") && <Trophy size={10} />} {b.tag}</span>
+                          <span className="tag">{/won/i.test(b.tag) && <Trophy size={10} />} {b.tag}</span>
                           <strong>{b.name}</strong>
                           <span className="cue">{sel ? "close" : "read"}</span>
                         </button>
@@ -959,14 +1085,19 @@ export default function Ride() {
                 <div className="pk-kicker">{CATS.find((c) => c.id === detailBuild.cat)?.label}</div>
                 <h3 className="pk-detail-title">{detailBuild.name}</h3>
                 <p className="pk-detail-sub">{detailBuild.tag}</p>
-                <p className="pk-detail-body">{detailBuild.text}</p>
+                <div className="pk-minihead">the problem</div>
+                <p className="pk-detail-body">{detailBuild.problem}</p>
+                <div className="pk-minihead">what I built</div>
+                <p className="pk-detail-body">{detailBuild.built}</p>
                 {detailBuild.name === "Basket" && (
-                  <div className="pk-detail-media" aria-label="Basket project images">
+                  <div className="pk-detail-media" aria-label="Basket product image">
                     <figure><img src="/images/basket-product.png" alt="Basket product interface monitoring a reformulation signal" /><figcaption>the product · reformulation sentinel</figcaption></figure>
                   </div>
                 )}
-                <div className="pk-minihead">why it matters</div>
-                <p className="pk-detail-body">{detailBuild.why}</p>
+                <div className="pk-minihead">my role</div>
+                <p className="pk-detail-body">{detailBuild.role}</p>
+                <div className="pk-minihead">outcome</div>
+                <p className="pk-detail-body">{detailBuild.outcome}</p>
                 {detailBuild.name === "Basket" && (
                   <div className="pk-detail-media pk-detail-media-last" aria-label="Basket team image">
                     <figure><img src="/images/basket-demo.jpg" alt="Nicole and the Basket team presenting the product" /><figcaption>the team · Tokens LDN demo</figcaption></figure>
