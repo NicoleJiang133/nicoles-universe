@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "https://esm.sh/three@0.170.0";
-import { ArrowDown, ArrowUpRight, Brain, Camera, Cat, Compass, Gamepad2, Mail, Plane, Target, Trophy, Users, Wrench } from "lucide-react";
+import { ArrowDown, ArrowUpRight, Brain, Camera, Cat, Compass, Gamepad2, Mail, Plane, Target, Trophy, Users, Wrench, X } from "lucide-react";
 
 const T = {
   paper: "#F4EDDE",
@@ -20,19 +20,24 @@ const SPOT_META = [
 ] as const;
 
 const ROLES = [
-  { org: "algo1", role: "Behavioural Scientist", when: "Sep 2025 · now" },
-  { org: "Applied Behaviour Change", role: "Product + BeSci Associate", when: "2024 · 2025" },
-  { org: "UCL Centre for Behaviour Change", role: "Research Assistant", when: "2024" },
+  { org: "algo1", role: "Behavioural Scientist", when: "Sep 2025 · now", what: "I own the behavioural layer of the product: work out why shoppers do what they do, design the trolley-tablet interventions that shift it, run A/B tests on real trips, and fold every result into the BeSci Engine.", taken: ["experiment design", "causal inference", "AI product judgement", "stakeholder storytelling"] },
+  { org: "Applied Behaviour Change", role: "Product + BeSci Associate", when: "2024 · 2025", what: "Behavioural diagnosis, intervention design, and research for health and wellbeing products. Client work from first workshop to shipped change.", taken: ["intervention design", "research to product translation", "client-ready evidence"] },
+  { org: "UCL Centre for Behaviour Change", role: "Research Assistant", when: "2024", what: "Behaviour change intervention ontologies, working with the team that writes the field's standards.", taken: ["BCTTv1 fluency", "ontology design", "academic rigour"] },
 ];
 
 const BUILDS = [
-  { name: "Tella", tag: "Tokens LDN · won", text: "A companion that calls older adults on their landline, remembers their stories, and asks about their grandkids by name. No app, no screen.", why: "Why it matters: loneliness is a health risk, and most tech ignores people without smartphones. A phone call meets them where they already are." },
-  { name: "Basket", tag: "Tokens LDN · won", text: "Watches recipe videos for comments like \"I swapped the brand\" and warns food companies weeks before the shift shows up in sales.", why: "Why it matters: brands usually learn about recipe backlash from sales data months later. A few weeks of early warning changes what they can still fix." },
-  { name: "Drift", tag: "AI Tinkerers · won", text: "Watches how you actually work for two weeks, then suggests small automations around your real habits, with a measure of what each one saves.", why: "Why it matters: most automation advice is generic. Watching how someone actually works first makes the advice worth taking." },
-  { name: "donna.ai", tag: "physical AI", text: "Voice plus vision on factory floors and delivery routes. Spots a delay early, calls the customer, and reroutes before anyone complains.", why: "Why it matters: a delay handled before the customer notices is the difference between a kept customer and a lost one." },
-  { name: "EvaOS", tag: "physical AI", text: "AI that talks to you while you cook or fix things, hands free. Sees what you see and walks you through the next step.", why: "Why it matters: AI you can use with your hands busy is a different product category, not a smaller screen." },
-  { name: "Mindful Pi", tag: "physical AI", text: "A small meditation box that reads your breathing and slows its light until you settle. No screen, and nothing leaves the device.", why: "Why it matters: meditation apps live on the same device that distracts you. Offline and screenless is the point." },
+  { name: "Tella", cat: "software", tag: "Tokens LDN · won", text: "A companion that calls older adults on their landline, remembers their stories, and asks about their grandkids by name. No app, no screen.", why: "Loneliness is a health risk, and most tech ignores people without smartphones. A phone call meets them where they already are." },
+  { name: "Basket", cat: "software", tag: "Tokens LDN · won", text: "Watches recipe videos for comments like \"I swapped the brand\" and warns food companies weeks before the shift shows up in sales.", why: "Brands usually learn about recipe backlash from sales data months later. A few weeks of early warning changes what they can still fix." },
+  { name: "Drift", cat: "software", tag: "AI Tinkerers · won", text: "Watches how you actually work for two weeks, then suggests small automations around your real habits, with a measure of what each one saves.", why: "Most automation advice is generic. Watching how someone actually works first makes the advice worth taking." },
+  { name: "donna.ai", cat: "hardware", tag: "physical AI", text: "Voice plus vision on factory floors and delivery routes. Spots a delay early, calls the customer, and reroutes before anyone complains.", why: "A delay handled before the customer notices is the difference between a kept customer and a lost one." },
+  { name: "EvaOS", cat: "hardware", tag: "physical AI", text: "AI that talks to you while you cook or fix things, hands free. Sees what you see and walks you through the next step.", why: "AI you can use with your hands busy is a different product category, not a smaller screen." },
+  { name: "Mindful Pi", cat: "hardware", tag: "physical AI", text: "A small meditation box that reads your breathing and slows its light until you settle. No screen, and nothing leaves the device.", why: "Meditation apps live on the same device that distracts you. Offline and screenless is the point." },
 ];
+
+const CATS = [
+  { id: "software", label: "Software & AI" },
+  { id: "hardware", label: "Hardware & Physical AI" },
+] as const;
 
 const PLAYER_ROWS = [
   ["player", "nicole jiang"],
@@ -213,11 +218,29 @@ export default function Ride() {
   const [active, setActive] = useState(0);
   const [progress, setProgress] = useState(0);
   const [ready, setReady] = useState(false);
-  const [openBuild, setOpenBuild] = useState<string | null>(null);
+  const [detail, setDetail] = useState<{ kind: "role" | "build"; id: string } | null>(null);
   const activeRef = useRef(0);
   const progressRef = useRef(0);
+  const flipRef = useRef(0);
+
+  const pick = (kind: "role" | "build", id: string) => {
+    setDetail((d) => {
+      const next = d && d.kind === kind && d.id === id ? null : { kind, id };
+      if (next) flipRef.current = performance.now();
+      return next;
+    });
+  };
 
   useEffect(() => { activeRef.current = active; }, [active]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setDetail(null); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  const detailRole = detail?.kind === "role" ? ROLES.find((r) => r.org === detail.id) : null;
+  const detailBuild = detail?.kind === "build" ? BUILDS.find((b) => b.name === detail.id) : null;
 
   useEffect(() => {
     const onScroll = () => {
@@ -463,6 +486,10 @@ export default function Ride() {
         if (progressRef.current > 0.01) trickStart = nowMs;
         lastActive = activeRef.current;
       }
+      if (flipRef.current > 0) {
+        trickStart = flipRef.current;
+        flipRef.current = 0;
+      }
       let hop = 0;
       let flip = 0;
       if (trickStart > 0) {
@@ -567,10 +594,14 @@ export default function Ride() {
         .pk-hone span { border: 2px solid ${T.ink}; border-radius: 999px; padding: 6px 9px; background: ${T.acid}; box-shadow: 2px 2px 0 ${T.ink}; font: 800 8px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .06em; text-transform: uppercase; }
         .pk-hone span:nth-child(2n) { background: ${T.card}; }
         .pk-roles { margin-top: 16px; border-top: 3px solid ${T.ink}; }
-        .pk-role { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 0; border-bottom: 2px dashed rgba(20,20,20,.22); }
+        .pk-role { display: flex; justify-content: space-between; align-items: center; gap: 12px; width: 100%; padding: 10px 9px; border: 2px solid transparent; border-bottom: 2px dashed rgba(20,20,20,.22); border-radius: 10px; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; transition: background .15s, border-color .15s; }
+        .pk-role:hover { background: rgba(214,255,61,.3); }
+        .pk-role.sel { background: ${T.acid}; border-color: ${T.ink}; box-shadow: 3px 3px 0 ${T.ink}; }
         .pk-role b { font: 800 14px ui-sans-serif, Inter, sans-serif; }
         .pk-role .r { display: block; font: 800 9px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .08em; text-transform: uppercase; color: ${T.flame}; }
+        .pk-role-r { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex: none; }
         .pk-role time { font: 10px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .06em; text-transform: uppercase; color: ${T.muted}; white-space: nowrap; }
+        .pk-role-cue { font: 800 8px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .1em; text-transform: uppercase; color: ${T.flame}; }
         .pk-through { margin-top: 14px; padding: 11px 0 11px 14px; border-left: 6px solid ${T.flame}; font: 700 13.5px/1.5 ui-sans-serif, Inter, sans-serif; }
         .pk-builds { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
         .pk-build { position: relative; display: flex; flex-direction: column; border: 3px solid ${T.ink}; border-radius: 15px; background: ${T.card}; box-shadow: 4px 4px 0 ${T.ink}; padding: 12px 12px 10px; text-align: left; cursor: pointer; transition: transform .15s, box-shadow .15s; overflow: hidden; }
@@ -660,6 +691,17 @@ export default function Ride() {
         .pk-outro-card p { margin: 0 auto; max-width: 400px; font: 15px/1.55 ui-sans-serif, Inter, sans-serif; color: ${T.muted}; }
         .pk-contact { display: flex; justify-content: center; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
         .pk-footer-line { margin-top: 26px; font: 800 9px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .14em; text-transform: uppercase; color: ${T.muted}; }
+        .pk-shelf { margin-top: 12px; }
+        .pk-shelf-head { display: inline-block; margin: 2px 0 9px; padding: 4px 10px; border: 2px solid ${T.ink}; border-radius: 999px; background: ${T.ink}; color: ${T.acid}; box-shadow: 2px 2px 0 rgba(20,20,20,.3); font: 800 9px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .14em; text-transform: uppercase; }
+        .pk-detail { position: fixed; left: 22px; top: 50%; transform: translateY(-50%); z-index: 25; width: min(400px, 44vw); pointer-events: none; }
+        .pk-detail-card { pointer-events: auto; position: relative; max-height: 78vh; overflow-y: auto; scrollbar-width: thin; border: 3px solid ${T.ink}; border-radius: 20px; background: rgba(255,253,247,.97); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 8px 8px 0 ${T.ink}; padding: 22px 20px 15px; animation: pkDetailIn .28s ease both; }
+        @keyframes pkDetailIn { from { opacity: 0; transform: translateX(-18px); } to { opacity: 1; transform: none; } }
+        .pk-detail-x { position: absolute; top: 11px; right: 11px; display: flex; align-items: center; justify-content: center; width: 29px; height: 29px; border: 2px solid ${T.ink}; border-radius: 50%; background: ${T.acid}; box-shadow: 2px 2px 0 ${T.ink}; cursor: pointer; }
+        .pk-detail-x:hover { background: ${T.flame}; color: ${T.card}; }
+        .pk-detail-title { margin: 8px 0 3px; padding-right: 30px; font: 900 26px/1.04 ui-sans-serif, Inter, sans-serif; letter-spacing: -.02em; text-transform: uppercase; }
+        .pk-detail-sub { margin: 0 0 10px; font: 800 9.5px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .1em; text-transform: uppercase; color: ${T.flame}; }
+        .pk-detail-body { margin: 0 0 6px; font: 13.5px/1.55 ui-sans-serif, Inter, sans-serif; color: #26221b; }
+        .pk-detail-foot { margin-top: 14px; font: 800 8px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .12em; text-transform: uppercase; color: ${T.muted}; }
         @media (max-width: 760px) {
           .pk-hero-grid { grid-template-columns: 1fr; gap: 30px; }
           .pk-player { order: -1; max-width: 250px; justify-self: start; transform: rotate(1.5deg) scale(.96); transform-origin: left top; }
@@ -670,6 +712,9 @@ export default function Ride() {
           .pk-time { display: none; }
           .pk-hud { left: 10px; bottom: 10px; padding: 8px 11px; gap: 8px; }
           .pk-hud-bar { width: 56px; }
+          .pk-detail { left: 12px; right: 12px; bottom: 14px; top: auto; width: auto; transform: none; }
+          .pk-detail-card { max-height: 46vh; animation: pkDetailInM .28s ease both; }
+          @keyframes pkDetailInM { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
         }
       `}} />
 
@@ -727,7 +772,17 @@ export default function Ride() {
               </div>
               <p>I'm a behavioural scientist at <strong>algo1</strong>, an AI startup in London building hyperpersonalized shopping for grocery retail. I work out why shoppers act as they do, then design and test what shifts it.</p>
               <p>I came in through psychology, not code. The interesting problem is always human before it is technical.</p>
-              <div className="pk-roles">{ROLES.map((r) => <div className="pk-role" key={r.org}><div><b>{r.org}</b><span className="r">{r.role}</span></div><time>{r.when}</time></div>)}</div>
+              <div className="pk-roles">
+                {ROLES.map((r) => {
+                  const sel = detail?.kind === "role" && detail.id === r.org;
+                  return (
+                    <button className={`pk-role ${sel ? "sel" : ""}`} key={r.org} onClick={() => pick("role", r.org)}>
+                      <div><b>{r.org}</b><span className="r">{r.role}</span></div>
+                      <span className="pk-role-r"><time>{r.when}</time><span className="pk-role-cue">{sel ? "close" : "detail"}</span></span>
+                    </button>
+                  );
+                })}
+              </div>
               <div className="pk-minihead">day to day at algo1</div>
               <ul className="pk-day">
                 <li><b>Diagnose.</b> Shopper interviews, journey mapping, reading session data for the why behind the buy.</li>
@@ -755,18 +810,24 @@ export default function Ride() {
                 <div><p className="sub">{SPOT_META[1].label}</p><h2>{SPOT_META[1].title}</h2></div>
                 <Wrench size={26} strokeWidth={2} />
               </div>
-              <p className="pk-builds-note">Weekend builds and hackathon sprints. Three of these won. Tap a card to read it.</p>
-              <div className="pk-builds">
-                {BUILDS.map((b) => (
-                  <button key={b.name} className={`pk-build ${openBuild === b.name ? "open" : ""}`} onClick={() => setOpenBuild(openBuild === b.name ? null : b.name)}>
-                    <span className="tag">{b.tag.includes("won") && <Trophy size={10} />} {b.tag}</span>
-                    <strong>{b.name}</strong>
-                    <span className="txt">{b.text}</span>
-                    <span className="txt why">{b.why}</span>
-                    <span className="cue">{openBuild === b.name ? "close" : "read"}</span>
-                  </button>
-                ))}
-              </div>
+              <p className="pk-builds-note">Weekend builds and hackathon sprints. Three of these won. Tap one and the detail bay opens on the left.</p>
+              {CATS.map((c) => (
+                <div className="pk-shelf" key={c.id}>
+                  <div className="pk-shelf-head">{c.label}</div>
+                  <div className="pk-builds">
+                    {BUILDS.filter((b) => b.cat === c.id).map((b) => {
+                      const sel = detail?.kind === "build" && detail.id === b.name;
+                      return (
+                        <button key={b.name} className={`pk-build ${sel ? "open" : ""}`} onClick={() => pick("build", b.name)}>
+                          <span className="tag">{b.tag.includes("won") && <Trophy size={10} />} {b.tag}</span>
+                          <strong>{b.name}</strong>
+                          <span className="cue">{sel ? "close" : "read"}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </section>
@@ -816,6 +877,34 @@ export default function Ride() {
           </div>
         </section>
       </div>
+      {(detailRole || detailBuild) && (
+        <aside className="pk-detail" aria-label="Details">
+          <div className="pk-detail-card" key={`${detail?.kind}-${detail?.id}`}>
+            <button className="pk-detail-x" onClick={() => setDetail(null)} aria-label="Close details"><X size={14} /></button>
+            {detailRole && (
+              <>
+                <div className="pk-kicker">work · experience</div>
+                <h3 className="pk-detail-title">{detailRole.org}</h3>
+                <p className="pk-detail-sub">{detailRole.role} · {detailRole.when}</p>
+                <p className="pk-detail-body">{detailRole.what}</p>
+                <div className="pk-minihead">what I took with me</div>
+                <div className="pk-hone">{detailRole.taken.map((s) => <span key={s}>{s}</span>)}</div>
+              </>
+            )}
+            {detailBuild && (
+              <>
+                <div className="pk-kicker">{CATS.find((c) => c.id === detailBuild.cat)?.label}</div>
+                <h3 className="pk-detail-title">{detailBuild.name}</h3>
+                <p className="pk-detail-sub">{detailBuild.tag}</p>
+                <p className="pk-detail-body">{detailBuild.text}</p>
+                <div className="pk-minihead">why it matters</div>
+                <p className="pk-detail-body">{detailBuild.why}</p>
+              </>
+            )}
+            <div className="pk-detail-foot">esc to close</div>
+          </div>
+        </aside>
+      )}
     </main>
   );
 }
