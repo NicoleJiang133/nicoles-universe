@@ -351,14 +351,6 @@ export default function Ride() {
         setPhase("stop");
         setActive(kind === "role" ? 1 : 2);
         openDetail(kind, id);
-        if (snapTimer.current) window.clearTimeout(snapTimer.current);
-        const station = sectionRefs.current[kind === "role" ? "background" : "builds"];
-        if (station) {
-          const target = station.offsetTop + lead + index * vh;
-          snapTimer.current = window.setTimeout(() => {
-            if (Math.abs(window.scrollY - target) > 24) window.scrollTo({ top: target, behavior: "smooth" });
-          }, 260);
-        }
       };
 
       const background = sectionRefs.current.background;
