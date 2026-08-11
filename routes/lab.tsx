@@ -98,7 +98,7 @@ const CATS = [
 
 const STOP_LEAD_VH = 0.45;
 const STOP_TRAIL_VH = 0.65;
-const OUTSIDE_STOP_VH = 1;
+const OUTSIDE_STOP_VH = 4;
 
 const PLAYER_ROWS = [
   ["player", "nicole jiang"],
@@ -110,11 +110,44 @@ const PLAYER_ROWS = [
 ];
 
 const PERSON_ROWS = [
-  { icon: Cat, label: "mom of two cats", note: "they run the flat" },
-  { icon: Plane, label: "travel + food", note: "always plotting the next trip" },
-  { icon: Users, label: "Manus Fellow", note: "still organizing community events" },
-  { icon: Brain, label: "lately chewing on", note: "HRI and the trust layer: what makes people hand tasks to machines" },
+  { id: "manus", icon: Users, label: "Manus Fellow", note: "building community around AI" },
+  { id: "cats", icon: Cat, label: "mom of two cats", note: "they run the flat" },
+  { id: "travel", icon: Plane, label: "travel + food", note: "always plotting the next trip" },
+  { id: "thread", icon: Brain, label: "current thread", note: "HRI and the trust layer" },
 ];
+
+const OUTSIDE_DETAILS = {
+  manus: {
+    label: "Manus Fellow",
+    title: "Learning in public",
+    intro: "A community of builders thinking seriously about what AI makes possible.",
+    points: ["Stay close to people building at the edge of AI.", "Organize events and conversations that make ideas easier to share.", "Keep translating technical shifts into better product questions."],
+  },
+  cats: {
+    label: "Mom of two cats",
+    title: "The home team",
+    intro: "I am a mom to two cats. They run the flat, set the meeting schedule, and keep the work human.",
+    points: ["A useful reminder that attention is finite.", "A daily lesson in designing around real behavior, not ideal behavior."],
+    image: "/images/polaroid-cats.png",
+    imageAlt: "Illustration of Nicole's two cats",
+    imageCap: "the cats",
+  },
+  travel: {
+    label: "Travel + food",
+    title: "Somewhere new",
+    intro: "Travel keeps me curious. Food is usually the fastest way into a place.",
+    points: ["I collect good dishes, unfamiliar streets, and reasons to come back.", "The best trips leave me noticing everyday systems differently."],
+    image: "/images/polaroid-travel.png",
+    imageAlt: "Travel illustration",
+    imageCap: "somewhere new",
+  },
+  thread: {
+    label: "Current thread",
+    title: "The trust layer",
+    intro: "I am thinking about human–robot interaction and what makes people feel safe handing tasks to machines.",
+    points: ["Trust is shaped by the interaction, not the model alone.", "Good physical AI should make its limits legible.", "The question I keep returning to: what should the human still feel in control of?"],
+  },
+} as const;
 
 const POLAROIDS = [
   { src: "/images/polaroid-cats.png", cap: "the cats" },
@@ -279,7 +312,7 @@ export default function Ride() {
   const [active, setActive] = useState(0);
   const [progress, setProgress] = useState(0);
   const [ready, setReady] = useState(false);
-  const [detail, setDetail] = useState<{ kind: "role" | "build"; id: string } | null>(null);
+  const [detail, setDetail] = useState<{ kind: "role" | "build" | "outside"; id: string } | null>(null);
   const [peek, setPeek] = useState(false);
   const [phase, setPhase] = useState<"approach" | "anchor" | "stop" | "transit">("approach");
   const activeRef = useRef(0);
@@ -289,7 +322,7 @@ export default function Ride() {
   const guidedKey = useRef("");
   const snapTimer = useRef<number | null>(null);
 
-  const openDetail = (kind: "role" | "build", id: string) => {
+  const openDetail = (kind: "role" | "build" | "outside", id: string) => {
     const key = `${kind}:${id}`;
     if (guidedKey.current !== key) {
       guidedKey.current = key;
@@ -299,7 +332,7 @@ export default function Ride() {
     setPeek(false);
   };
 
-  const pick = (kind: "role" | "build", id: string) => {
+  const pick = (kind: "role" | "build" | "outside", id: string) => {
     const isSame = detail?.kind === kind && detail.id === id;
     if (isSame) {
       setDetail(null);
@@ -308,9 +341,13 @@ export default function Ride() {
       return;
     }
     openDetail(kind, id);
-    const station = sectionRefs.current[kind === "role" ? "background" : "builds"];
-    const items = kind === "role" ? ROLES : BUILDS;
-    const index = items.findIndex((item) => (kind === "role" ? item.org : item.name) === id);
+    const stationName = kind === "role" ? "background" : kind === "build" ? "builds" : "outside";
+    const station = sectionRefs.current[stationName];
+    const index = kind === "role"
+      ? ROLES.findIndex((item) => item.org === id)
+      : kind === "build"
+        ? BUILDS.findIndex((item) => item.name === id)
+        : PERSON_ROWS.findIndex((item) => item.id === id);
     if (station && index >= 0) {
       window.scrollTo({ top: station.offsetTop + window.innerHeight * (STOP_LEAD_VH + index), behavior: "smooth" });
     }
@@ -326,8 +363,9 @@ export default function Ride() {
 
   const detailRole = detail?.kind === "role" ? ROLES.find((r) => r.org === detail.id) : null;
   const detailBuild = detail?.kind === "build" ? BUILDS.find((b) => b.name === detail.id) : null;
-  const detailStep = detailRole ? ROLES.findIndex((r) => r.org === detailRole.org) + 1 : detailBuild ? BUILDS.findIndex((b) => b.name === detailBuild.name) + 1 : 0;
-  const detailTotal = detailRole ? ROLES.length : detailBuild ? BUILDS.length : 0;
+  const detailOutside = detail?.kind === "outside" ? OUTSIDE_DETAILS[detail.id as keyof typeof OUTSIDE_DETAILS] : null;
+  const detailStep = detailRole ? ROLES.findIndex((r) => r.org === detailRole.org) + 1 : detailBuild ? BUILDS.findIndex((b) => b.name === detailBuild.name) + 1 : detailOutside ? PERSON_ROWS.findIndex((r) => r.id === detail?.id) + 1 : 0;
+  const detailTotal = detailRole ? ROLES.length : detailBuild ? BUILDS.length : detailOutside ? PERSON_ROWS.length : 0;
 
   useEffect(() => {
     const onScroll = () => {
@@ -355,9 +393,9 @@ export default function Ride() {
         setPhase("anchor");
         setActive(stop);
       };
-      const showChapter = (kind: "role" | "build", id: string, index: number) => {
+      const showChapter = (kind: "role" | "build" | "outside", id: string) => {
         setPhase("stop");
-        setActive(kind === "role" ? 1 : 2);
+        setActive(kind === "role" ? 1 : kind === "build" ? 2 : 3);
         openDetail(kind, id);
       };
 
@@ -385,7 +423,7 @@ export default function Ride() {
           showAnchor(1);
         } else {
           const index = Math.min(ROLES.length - 1, Math.max(0, Math.floor((local - lead) / vh)));
-          showChapter("role", ROLES[index].org, index);
+          showChapter("role", ROLES[index].org);
         }
       } else if (y < buildsStart) {
         const q = Math.min(1, Math.max(0, (y - backgroundStopEnd) / Math.max(buildsStart - backgroundStopEnd, 1)));
@@ -398,7 +436,7 @@ export default function Ride() {
           showAnchor(2);
         } else {
           const index = Math.min(BUILDS.length - 1, Math.max(0, Math.floor((local - lead) / vh)));
-          showChapter("build", BUILDS[index].name, index);
+          showChapter("build", BUILDS[index].name);
         }
       } else if (y < outsideStart) {
         const q = Math.min(1, Math.max(0, (y - buildsStopEnd) / Math.max(outsideStart - buildsStopEnd, 1)));
@@ -410,10 +448,8 @@ export default function Ride() {
         if (local < lead) {
           showAnchor(3);
         } else {
-          setPhase("stop");
-          setActive(3);
-          setDetail(null);
-          guidedKey.current = "";
+          const index = Math.min(PERSON_ROWS.length - 1, Math.max(0, Math.floor((local - lead) / vh)));
+          showChapter("outside", PERSON_ROWS[index].id);
         }
       } else if (y < outroTrigger) {
         const q = Math.min(1, Math.max(0, (y - outsideStopEnd) / Math.max(outroTrigger - outsideStopEnd, 1)));
@@ -930,7 +966,7 @@ export default function Ride() {
         .pk-guided { align-items: flex-start; min-height: 0; padding-top: 9vh; padding-bottom: 9vh; }
         .pk-guided-roles { min-height: calc((3 + ${STOP_LEAD_VH} + ${STOP_TRAIL_VH}) * 100vh); }
         .pk-guided-builds { min-height: calc((${BUILDS.length} + ${STOP_LEAD_VH} + ${STOP_TRAIL_VH}) * 100vh); }
-        .pk-guided-outside { min-height: calc((1 + ${STOP_LEAD_VH} + ${STOP_TRAIL_VH}) * 100vh); }
+        .pk-guided-outside { min-height: calc((4 + ${STOP_LEAD_VH} + ${STOP_TRAIL_VH}) * 100vh); }
         .pk-guided .pk-card { position: sticky; top: 9vh; }
         .pk-guided .pk-sec-inner { align-items: flex-start; }
         .pk-guided .pk-kicker::after { content: " · scroll through the station"; color: ${T.flame}; }
@@ -1041,32 +1077,24 @@ export default function Ride() {
 
         <section ref={(el) => { sectionRefs.current.outside = el; }} className="pk-sec pk-guided pk-guided-outside" id="outside">
           <div className="pk-sec-inner pk-outside-col">
-            <div className={`pk-card ${active === 3 ? "on" : ""}`}>
+            <div className={`pk-card ${active === 3 ? "on" : ""}`} onMouseEnter={() => detail && setPeek(true)} onMouseLeave={() => setPeek(false)}>
               <div className="pk-kicker">spot 03 · bowl · {SPOT_META[2].sub}</div>
               <div className="pk-card-head">
                 <span className="pk-num">03</span>
                 <div><p className="sub">{SPOT_META[2].label}</p><h2>{SPOT_META[2].title}</h2></div>
                 <Compass size={26} strokeWidth={2} />
               </div>
-              <p>Lately: hardware. Raspberry Pis, 3D printers, a first soldered board. After years of pixels, atoms are fun.</p>
-              <p>Heading toward human and AI interaction people feel safe adopting. Eventually, a company of my own.</p>
-              <div className="pk-people">
-                {PERSON_ROWS.map((r) => (
-                  <div className="pk-person" key={r.label}>
-                    <span className="pk-person-ic"><r.icon size={14} /></span>
-                    <div><b>{r.label}</b><span>{r.note}</span></div>
-                  </div>
-                ))}
+              <div className="pk-roles pk-outside-index">
+                {PERSON_ROWS.map((r) => {
+                  const sel = detail?.kind === "outside" && detail.id === r.id;
+                  return (
+                    <button className={`pk-role ${sel ? "sel" : ""}`} key={r.id} onClick={() => pick("outside", r.id)}>
+                      <div><b>{r.label}</b><span className="r">{r.note}</span></div>
+                      <span className="pk-role-r"><span className="pk-role-cue">{sel ? "close" : "detail"}</span></span>
+                    </button>
+                  );
+                })}
               </div>
-              <div className="pk-polars">
-                {POLAROIDS.map((p, i) => (
-                  <figure className="pk-polar" key={p.src} style={{ transform: `rotate(${[-2.2, 1.6, -1.2][i]}deg)` }}>
-                    <img src={p.src} alt={p.cap} loading="lazy" />
-                    <figcaption>{p.cap}</figcaption>
-                  </figure>
-                ))}
-              </div>
-              <p className="pk-langs">中文 · native &nbsp; English · fluent &nbsp; 日本語 · conversational</p>
             </div>
           </div>
         </section>
@@ -1084,7 +1112,7 @@ export default function Ride() {
           </div>
         </section>
       </div>
-      {(detailRole || detailBuild) && (
+      {(detailRole || detailBuild || detailOutside) && (
         <aside className="pk-detail" aria-label="Details">
           <div className="pk-detail-card" key={`${detail?.kind}-${detail?.id}`}>
             <button className="pk-detail-x" onClick={() => setDetail(null)} aria-label="Close details"><X size={14} /></button>
@@ -1121,6 +1149,23 @@ export default function Ride() {
                 {detailBuild.name === "Basket" && (
                   <div className="pk-detail-media pk-detail-media-last" aria-label="Basket team image">
                     <figure><img src="/images/basket-demo.jpg" alt="Nicole and the Basket team presenting the product" /><figcaption>the team · Tokens LDN demo</figcaption></figure>
+                  </div>
+                )}
+              </>
+            )}
+            {detailOutside && (
+              <>
+                <div className="pk-kicker">outside the work · {detailOutside.label}</div>
+                <h3 className="pk-detail-title">{detailOutside.title}</h3>
+                <p className="pk-detail-body">{detailOutside.intro}</p>
+                <div className="pk-minihead">the short version</div>
+                <ul className="pk-day">{detailOutside.points.map((item) => <li key={item}>{item}</li>)}</ul>
+                {detailOutside.image && (
+                  <div className="pk-detail-media pk-outside-media">
+                    <figure>
+                      <img src={detailOutside.image} alt={detailOutside.imageAlt} />
+                      <figcaption>{detailOutside.imageCap}</figcaption>
+                    </figure>
                   </div>
                 )}
               </>

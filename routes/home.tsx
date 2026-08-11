@@ -1,318 +1,361 @@
-import { useEffect, useRef, useState } from "react";
-import { ArrowRight, Mic, Headphones, Compass, Gamepad2, Volume2, VolumeX, Sparkles, Cpu, Waves, Radio, Bot, Trophy, Zap, Clock, MapPin } from "lucide-react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { ArrowDown, ArrowUpRight, Brain, Camera, Compass, Mail, Target, Wrench } from "lucide-react";
 
-const theme = {
-  paper: "#FAF7F0",
-  cream: "#F2EBD9",
-  ink: "#1A1A1A",
-  inkSoft: "#3A3A3A",
-  muted: "#7A7468",
-  coral: "#FF5C4D",
-  sky: "#4DA3FF",
-  lime: "#B8E847",
-  yellow: "#F1C40F",
-  red: "#C0392B",
-  navy: "#2C3E73",
-  shadow: "0 1px 0 rgba(26,26,26,0.06), 0 8px 24px -8px rgba(26,26,26,0.10)",
+const T = {
+  paper: "#F1ECE0",
+  ink: "#0E0E0E",
+  muted: "#6B6558",
+  flame: "#FF3D1A",
+  acid: "#D6FF3D",
+  white: "#FFFDF7",
 };
 
-const projects = [
-  { id: "tella", icon: Bot, cover: "🎙️", title: "Tella", subtitle: "Voice AI for elderly care", hours: "48h", track: "Productivity Top 3", prizes: "2 prizes", stack: ["ElevenLabs", "Anthropic", "Twilio", "ACI.dev"], blurb: "Proactive AI calls for the gaps between scheduled care visits. The smallest thing that removes the most pain.", win: true },
-  { id: "donna", icon: Radio, cover: "📦", title: "donna.ai", subtitle: "Voice agent for delivery", hours: "5h", track: "Best Use of ElevenLabs", prizes: "1 prize", stack: ["ElevenLabs", "OpenAI", "Encord", "DeepMind", "Lovable"], blurb: "Real-time multimodal agent. Driver speaks, customer hears back before panic. 84% of broken delivery experiences = lost retailer customers.", win: true },
-  { id: "vibify", icon: Headphones, cover: "🎧", title: "Vibify", subtitle: "Context-aware music recs", hours: "6h", track: "London AI Hack #2", prizes: "0 prizes", stack: ["Weaviate", "OpenAI", "Prolific", "ElevenLabs"], blurb: "Translates musical features into tokens, blends with weather + calendar. Match my vibe so I can get into flow.", win: false },
-  { id: "meditate", icon: Waves, cover: "🧘", title: "Mindful Pi", subtitle: "Offline meditation device", hours: "48h", track: "On-device AI Hackathon", prizes: "1 prize (Overmind track)", stack: ["Raspberry Pi", "Cognee", "Local LLM"], blurb: "No screen, no internet. The medium can't undermine the message. Local memory you choose to share.", win: true },
-  { id: "repvoice", icon: Mic, cover: "💊", title: "RepVoice", subtitle: "Voice OS for pharma reps", hours: "48h", track: "Voice AI Hack London", prizes: "Top 3 in Productivity", stack: ["Gradium", "Speechmatics", "Thymia", "TinyFish"], blurb: "Speak your post-call summary. CRM fields, MHRA alerts, Veeva auto-fill, voice-brief on next visit. Voice in. Paperwork out.", win: true },
+const SPOTS = [
+  { id: "background", number: "01", label: "Quarterpipe", title: "How I got here", icon: Brain },
+  { id: "builds", number: "02", label: "Rail", title: "What I build", icon: Wrench },
+  { id: "outside", number: "03", label: "Bowl", title: "What pulls me forward", icon: Compass },
+] as const;
+
+const ROLES = [
+  { org: "algo1", role: "Behavioural Scientist", when: "Sep 2025 to now", note: "Behaviour-led AI for grocery retail. I work out why shoppers act as they do, then design and test what shifts it." },
+  { org: "Applied Behaviour Change", role: "Product and Behavioural Science Associate", when: "2024 to 2025", note: "Behavioural diagnosis, intervention design, and research for health and wellbeing products." },
+  { org: "UCL Centre for Behaviour Change", role: "Research Assistant", when: "2024", note: "Behaviour change intervention ontologies, with the team that writes the field's standards." },
 ];
 
-const stats = [
-  { k: "Hackathons", v: "5", icon: Gamepad2 },
-  { k: "Prizes", v: "4", icon: Trophy },
-  { k: "Hours shipped", v: "~155h", icon: Clock },
-  { k: "Loc", v: "LDN", icon: MapPin },
+const BUILDS = [
+  { name: "Tella", tag: "Launched · in beta", text: "An AI voice companion that calls older adults with warm daily check-ins, even on a landline, then flags anything off to their carer." },
+  { name: "Basket", tag: "Won · Tokens LDN track", text: "Five AI agents that watch the web for complaints when a product quietly changes its recipe, so brands hear the backlash in weeks, not months." },
+  { name: "Drift", tag: "Shortlisted", text: "AI that reads how you actually work, then points to what is worth automating. Built in 24 hours." },
+  { name: "donna.ai", tag: "Won · Best use of ElevenLabs", text: "A real-time voice and vision agent that calls delivery customers before a delay turns into a lost one." },
+  { name: "EvaOS", tag: "Hardware build", text: "Physical AI you clip to a cap: notes, teleprompter, and navigation, all hands-free." },
+  { name: "Mindful Pi", tag: "Won · Overmind track", text: "A fully offline meditation device on a Raspberry Pi. No screen, no internet. It hears your mood and builds a session on-device." },
 ];
 
-const interests = [
-  { i: Compass, t: "Physical AI", d: "Robots, locomotion, world models." },
-  { i: Cpu, t: "Neurotech", d: "Brain-computer interfaces. Reading on it constantly." },
-  { i: Waves, t: "The ocean", d: "Especially the deep ocean. It makes everything feel small in a good way." },
-  { i: Sparkles, t: "The universe", d: "Spacetime. Black holes. The light-year kind of scale." },
-];
+function useLondonTime() {
+  const [now, setNow] = useState("");
+  useEffect(() => {
+    const tick = () => setNow(new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit", timeZone: "Europe/London" }).format(new Date()));
+    tick();
+    const timer = window.setInterval(tick, 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+  return now;
+}
 
-const layers = [
-  { n: "01", t: "Diagnose", d: "Specific person, moment, friction." },
-  { n: "02", t: "Design", d: "Smallest intervention that could plausibly change the behaviour." },
-  { n: "03", t: "Test", d: "1–5% effect sizes compound. Value lives in the portfolio." },
-  { n: "04", t: "Document", d: "Every IPC tagged. Null results = knowledge." },
-  { n: "05", t: "Govern", d: "APEASE. Dark patterns. DSA, AI Act, GDPR." },
-  { n: "06", t: "AI-loop", d: "Personalisation, decay, RL sequencing." },
-];
+function useRideProgress(ids: readonly string[]) {
+  const refs = useRef<Record<string, HTMLElement | null>>({});
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  const [active, setActive] = useState("");
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const update = () => {
+      const track = trackRef.current;
+      if (!track) return;
+      const viewport = window.innerHeight;
+      const trackTop = track.getBoundingClientRect().top + window.scrollY;
+      const marker = window.scrollY + viewport * 0.34;
+      const travelled = Math.min(Math.max((marker - trackTop) / Math.max(track.offsetHeight, 1), 0), 1);
+      setProgress(travelled);
+      let next = ids[0];
+      let nearest = Number.POSITIVE_INFINITY;
+      ids.forEach((id) => {
+        const rect = refs.current[id]?.getBoundingClientRect();
+        if (!rect) return;
+        const distance = Math.abs(rect.top - viewport * 0.34);
+        if (distance < nearest) {
+          nearest = distance;
+          next = id;
+        }
+      });
+      setActive(next);
+    };
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+    };
+  }, [ids]);
+
+  return { refs, trackRef, active, progress };
+}
+
+function Deck({ size = 1, spin = false }: { size?: number; spin?: boolean }) {
+  return (
+    <div className={spin ? "deck-mark deck-spin" : "deck-mark"} style={{ width: 96 * size, height: 52 * size }} aria-hidden>
+      <svg viewBox="0 0 190 100" width={96 * size} height={52 * size}>
+        <g transform="translate(95 46) rotate(-6)">
+          <path d="M-70-9 C-65-16-56-18-47-18 H47 C56-18 65-16 70-9 L66 6 C62 12 55 14 47 14 H-47 C-55 14-62 12-66 6Z" fill={T.ink} />
+          <path d="M-52-13 H52" stroke={T.acid} strokeWidth="6" strokeLinecap="round" />
+          <path d="M-46 15v12M46 15v12" stroke={T.ink} strokeWidth="6" />
+          <rect x="-58" y="25" width="26" height="6" rx="3" fill={T.flame} />
+          <rect x="32" y="25" width="26" height="6" rx="3" fill={T.flame} />
+          <circle cx="-46" cy="37" r="10" fill={T.paper} stroke={T.ink} strokeWidth="4" />
+          <circle cx="46" cy="37" r="10" fill={T.paper} stroke={T.ink} strokeWidth="4" />
+          <circle cx="-46" cy="37" r="3" fill={T.flame} />
+          <circle cx="46" cy="37" r="3" fill={T.flame} />
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+function SectionLead({ spot, eyebrow }: { spot: typeof SPOTS[number]; eyebrow: string }) {
+  const Icon = spot.icon;
+  return (
+    <div className="section-lead">
+      <div className="section-kicker">{eyebrow}</div>
+      <div className="section-title-row">
+        <span className="section-number">{spot.number}</span>
+        <div>
+          <p className="section-label">{spot.label}</p>
+          <h2>{spot.title}</h2>
+        </div>
+        <Icon className="section-icon" size={26} strokeWidth={2} />
+      </div>
+    </div>
+  );
+}
+
+function BuildDeck({ build, open, onClick }: { build: typeof BUILDS[number]; open: boolean; onClick: () => void }) {
+  return (
+    <button onClick={onClick} className={`build-deck ${open ? "build-deck-open" : ""}`}>
+      <span className="build-deck-strip" />
+      <span className="build-deck-top">
+        <span>{build.tag}</span>
+        <ArrowUpRight size={16} />
+      </span>
+      <strong>{build.name}</strong>
+      <span className="build-deck-text">{build.text}</span>
+      <span className="build-deck-action">{open ? "close" : "tap to read"}</span>
+    </button>
+  );
+}
 
 export default function Home() {
-  const [view, setView] = useState<"boot" | "play">("boot");
-  const [hovered, setHovered] = useState<string | null>(null);
-  const [muted, setMuted] = useState(true);
-  const [keys, setKeys] = useState<{ a: boolean; d: boolean; space: boolean }>({ a: false, d: false, space: false });
-  const [playerX, setPlayerX] = useState(50);
-  const [score, setScore] = useState(0);
-  const [obstacles, setObstacles] = useState<{ id: number; x: number; y: number; type: "star" | "void" }[]>([]);
-  const playerRef = useRef<HTMLDivElement>(null);
+  const now = useLondonTime();
+  const { refs, trackRef, active, progress } = useRideProgress(SPOTS.map((spot) => spot.id));
+  const [openBuild, setOpenBuild] = useState<string | null>(null);
+  const [started, setStarted] = useState(false);
+  const activeIndex = Math.max(SPOTS.findIndex((spot) => spot.id === active), 0);
 
   useEffect(() => {
-    const t = setTimeout(() => setView("play"), 1800);
-    return () => clearTimeout(t);
+    const startRide = () => setStarted(true);
+    window.addEventListener("scroll", startRide, { passive: true, once: true });
+    return () => window.removeEventListener("scroll", startRide);
   }, []);
 
-  useEffect(() => {
-    if (view !== "play") return;
-    const onKey = (e: KeyboardEvent, down: boolean) => {
-      if (e.key === "a" || e.key === "ArrowLeft") setKeys((k) => ({ ...k, a: down }));
-      if (e.key === "d" || e.key === "ArrowRight") setKeys((k) => ({ ...k, d: down }));
-      if (e.key === " ") { setKeys((k) => ({ ...k, space: down })); e.preventDefault(); }
-    };
-    const dn = (e: KeyboardEvent) => onKey(e, true);
-    const up = (e: KeyboardEvent) => onKey(e, false);
-    window.addEventListener("keydown", dn);
-    window.addEventListener("keyup", up);
-    return () => { window.removeEventListener("keydown", dn); window.removeEventListener("keyup", up); };
-  }, [view]);
-
-  useEffect(() => {
-    if (view !== "play") return;
-    let raf = 0;
-    let last = performance.now();
-    const tick = (now: number) => {
-      const dt = (now - last) / 16;
-      last = now;
-      setPlayerX((x) => Math.max(8, Math.min(92, x + (keys.d ? 1.2 : 0) * dt - (keys.a ? 1.2 : 0) * dt)));
-      setObstacles((obs) => {
-        const next = obs.map((o) => ({ ...o, y: o.y + 0.6 * dt })).filter((o) => o.y < 105);
-        if (Math.random() < 0.04) {
-          next.push({ id: now + Math.random(), x: 10 + Math.random() * 80, y: -5, type: Math.random() > 0.3 ? "star" : "void" });
-        }
-        return next;
-      });
-      setScore((s) => s + (keys.space ? 0.5 : 0.2));
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [view, keys]);
+  const jumpTo = (id: string) => {
+    refs.current[id]?.scrollIntoView({ behavior: "smooth", block: "center" });
+    setStarted(true);
+  };
 
   return (
-    <main
-      className="min-h-screen w-full relative overflow-hidden"
-      style={{ background: theme.paper, color: theme.ink, fontFamily: '"Courier New", monospace' }}
-    >
-      <style>{`
-        @keyframes float { 0%,100%{ transform: translateY(0) } 50%{ transform: translateY(-6px) } }
-        @keyframes pulse-dot { 0%,100%{ opacity: 1 } 50%{ opacity: 0.3 } }
-        @keyframes blink { 0%,100%{ opacity: 1 } 50%{ opacity: 0 } }
-        .float { animation: float 3s ease-in-out infinite; }
-        .pulse-dot { animation: pulse-dot 1.6s ease-in-out infinite; }
-        .blink { animation: blink 1s steps(1) infinite; }
-        .pixel { image-rendering: pixelated; }
-        @import url('https://fonts.googleapis.com/css2?family=VT323&family=Space+Mono:wght@400;700&display=swap');
-      `}</style>
+    <main className="a6-page">
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes a6Fade { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+        @keyframes a6Bob { 0%,100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-8px) rotate(3deg); } }
+        @keyframes a6Spin { 0% { transform: rotate(0); } 100% { transform: rotate(360deg); } }
+        @keyframes a6Pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,61,26,.3); } 50% { box-shadow: 0 0 0 9px rgba(255,61,26,0); } }
+        .a6-page { min-height: 100vh; background: ${T.paper}; color: ${T.ink}; overflow-x: hidden; font-family: ui-sans-serif, Inter, system-ui, -apple-system, sans-serif; }
+        .a6-page * { box-sizing: border-box; }
+        .a6-page::before { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: .07; background-image: radial-gradient(${T.ink} 1px, transparent 1px); background-size: 5px 5px; }
+        .a6-shell { position: relative; z-index: 1; max-width: 980px; margin: 0 auto; padding: 0 28px; }
+        .a6-nav { display:flex; justify-content:space-between; align-items:center; padding:24px 0; font:800 11px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing:.14em; text-transform:uppercase; color:${T.muted}; border-bottom: 3px solid ${T.ink}; }
+        .a6-nav a { color:inherit; text-decoration:none; }
+        .a6-nav a:hover { color:${T.flame}; }
+        .a6-nav .nav-brand { display:flex; align-items:center; gap:9px; color:${T.ink}; }
+        .a6-nav .nav-brand i { width:9px; height:9px; border-radius:50%; background:${T.flame}; animation:a6Pulse 1.8s ease infinite; }
+        .a6-nav .nav-links { display:flex; align-items:center; gap:20px; }
+        .a6-nav .nav-links a { color:inherit; text-decoration:none; }
+        .a6-nav .nav-links a:hover { color:${T.flame}; }
+        .hero { padding:52px 0 64px; animation:a6Fade .7s ease both; }
+        .hero-grid { display:grid; grid-template-columns:1.25fr 1fr; gap:44px; align-items:center; }
+        .now-pill { display:inline-flex; align-items:center; gap:9px; border:3px solid ${T.ink}; border-radius:999px; background:${T.white}; padding:8px 15px; box-shadow:4px 4px 0 ${T.ink}; font:800 10px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing:.08em; text-transform:uppercase; }
+        .now-pill i { width:7px; height:7px; border-radius:50%; background:${T.flame}; animation:a6Pulse 1.8s ease infinite; }
+        .now-pill em { font-style:normal; font-weight:600; letter-spacing:0; text-transform:none; color:${T.ink}; }
+        .hero-copy h1 { margin:20px 0 0; font:900 clamp(48px,8vw,84px)/.92 ui-sans-serif, Inter, system-ui, sans-serif; letter-spacing:-.035em; text-transform:uppercase; }
+        .hero-role { margin:12px 0 0; font:700 17px/1.4 ui-sans-serif, Inter, sans-serif; color:${T.flame}; text-transform:uppercase; letter-spacing:.02em; }
+        .hero-summary { max-width:520px; margin:18px 0 0; font:16px/1.6 ui-sans-serif, Inter, sans-serif; color:#232019; }
+        .hero-summary strong { color:${T.ink}; background:linear-gradient(180deg, transparent 62%, ${T.acid} 62%); padding:0 1px; }
+        .hero-cta-row { display:flex; gap:12px; margin-top:30px; flex-wrap:wrap; }
+        .drop-in { display:inline-flex; align-items:center; gap:9px; border:3px solid ${T.ink}; border-radius:999px; padding:12px 19px; background:${T.ink}; color:${T.paper}; box-shadow:5px 5px 0 ${T.flame}; font:800 11px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing:.1em; text-transform:uppercase; cursor:pointer; transition:transform .15s, box-shadow .15s; text-decoration:none; }
+        .drop-in:hover { transform:translate(-2px,-2px); box-shadow:7px 7px 0 ${T.flame}; }
+        .drop-in-ghost { background:transparent; color:${T.ink}; box-shadow:5px 5px 0 ${T.ink}; }
+        .drop-in-ghost:hover { box-shadow:7px 7px 0 ${T.ink}; }
+        .hero-note { margin-top:22px; font:800 10px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing:.14em; text-transform:uppercase; color:${T.muted}; }
+        .hero-stamps { display:flex; flex-wrap:wrap; gap:8px; margin-top:15px; }
+        .hero-stamps span { border:2px solid ${T.ink}; border-radius:999px; padding:6px 9px; background:${T.white}; box-shadow:2px 2px 0 ${T.ink}; font:800 9px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing:.08em; text-transform:uppercase; }
+        .hero-stamps span:nth-child(2) { background:${T.acid}; }
+        .hero-stamps span:nth-child(3) { background:${T.flame}; color:${T.white}; }
+        .journey-map { display:flex; align-items:center; gap:8px; margin-top:14px; }
+        .journey-map-label { margin-right:3px; font:800 9px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing:.12em; text-transform:uppercase; color:${T.muted}; }
+        .journey-map i { display:block; width:9px; height:9px; border:2px solid ${T.ink}; border-radius:50%; background:${T.flame}; }
+        .journey-map i:nth-of-type(2) { background:${T.acid}; }
+        .journey-map i:nth-of-type(3) { background:${T.white}; }
+        .journey-map b { width:22px; height:2px; background:${T.ink}; opacity:.45; }
+        .lead-visual { display:flex; align-items:center; gap:12px; margin-left:auto; }
+        .lead-visual .section-icon { margin-left:0; }
+        .hero-portrait { position:relative; display:flex; justify-content:center; }
+        .portrait-frame { position:relative; width:100%; max-width:300px; border:4px solid ${T.ink}; border-radius:26px; overflow:hidden; box-shadow:9px 9px 0 ${T.flame}; transform:rotate(2deg); background:${T.ink}; }
+        .portrait-frame::after { content:"portfolio / 2026"; position:absolute; right:-42px; top:50%; transform:rotate(90deg); color:${T.white}; font:800 9px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing:.16em; text-transform:uppercase; }
+        .portrait-frame img { display:block; width:100%; aspect-ratio:4/5; object-fit:cover; filter:grayscale(.08) contrast(1.05); }
+        .portrait-tag { position:absolute; left:14px; bottom:14px; display:inline-flex; align-items:center; border:3px solid ${T.ink}; border-radius:999px; background:${T.acid}; padding:6px 12px; font:800 9px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing:.1em; text-transform:uppercase; color:${T.ink}; box-shadow:3px 3px 0 ${T.ink}; }
+        .hero-route-note { position:absolute; left:-42px; bottom:16px; width:122px; padding:10px 11px; border:3px solid ${T.ink}; background:${T.white}; box-shadow:4px 4px 0 ${T.ink}; transform:rotate(-6deg); font:800 9px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing:.05em; text-transform:uppercase; }
+        .hero-route-note b { display:block; margin-bottom:6px; color:${T.flame}; }
+        .hero-route-note span { display:block; color:${T.muted}; }
+        .journey-track { position:relative; padding-left:64px; }
+        .journey-track::before { content:""; position:absolute; left:22px; top:6px; bottom:6px; width:4px; background:${T.ink}; opacity:.16; border-radius:2px; }
+        .ride-board { position:absolute; left:-4px; z-index:2; width:64px; transform:translateY(-50%); transition:top .08s linear; pointer-events:none; }
+        .ride-board .deck-mark { width:64px !important; height:35px !important; }
+        .track-current { position:absolute; left:66px; top:0; display:inline-flex; align-items:center; padding:6px 12px; margin-top:-3px; border:2px solid ${T.ink}; border-radius:999px; background:${T.white}; box-shadow:2px 2px 0 ${T.ink}; font:800 9px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing:.1em; text-transform:uppercase; color:${T.ink}; }
+        .scene { position:relative; min-height:600px; padding:50px 0 84px; scroll-margin-top:100px; overflow:visible; }
+        .scene + .scene { border-top:3px solid ${T.ink}; }
+        .section-lead { margin-bottom:30px; }
+        .section-kicker { font:800 10px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing:.18em; text-transform:uppercase; color:${T.flame}; }
+        .section-title-row { display:flex; align-items:center; gap:15px; margin-top:9px; }
+        .section-number { display:flex; align-items:center; justify-content:center; width:44px; height:44px; flex:none; border:3px solid ${T.ink}; border-radius:50%; background:${T.acid}; box-shadow:3px 3px 0 ${T.ink}; font:800 14px ui-monospace, SFMono-Regular, Menlo, monospace; }
+        .section-label { margin:0 0 2px; font:800 10px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing:.14em; text-transform:uppercase; color:${T.muted}; }
+        .section-title-row h2 { margin:0; font:900 clamp(28px,4.5vw,44px)/1.02 ui-sans-serif, Inter, sans-serif; letter-spacing:-.03em; text-transform:uppercase; }
+        .section-icon { margin-left:auto; color:${T.ink}; }
+        .scene > * { position:relative; z-index:1; }
+        .scene-copy { max-width:660px; font:16px/1.65 ui-sans-serif, Inter, sans-serif; color:#232019; }
+        .scene-copy strong { color:${T.ink}; }
+        .work-list { margin-top:38px; border-top:3px solid ${T.ink}; }
+        .work-row { display:grid; grid-template-columns:22px 1.1fr .7fr 1.8fr; gap:16px; padding:16px 0; border-bottom:2px solid rgba(14,14,14,.16); align-items:start; }
+        .work-row .bolt { width:14px; height:14px; margin-top:6px; border-radius:50%; border:3px solid ${T.ink}; background:${T.paper}; }
+        .work-row strong { font:800 18px ui-sans-serif, Inter, sans-serif; }
+        .work-row .role { font:800 10px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing:.08em; text-transform:uppercase; color:${T.flame}; }
+        .work-row time { font:10px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing:.08em; text-transform:uppercase; color:${T.muted}; }
+        .work-row p { margin:0; font:14px/1.5 ui-sans-serif, Inter, sans-serif; color:#232019; }
+        .through-line { margin-top:32px; padding:15px 0 15px 18px; border-left:6px solid ${T.flame}; font:600 16px/1.5 ui-sans-serif, Inter, sans-serif; color:${T.ink}; }
+        .build-intro { max-width:600px; margin-bottom:26px; font:16px/1.6 ui-sans-serif, Inter, sans-serif; color:#232019; }
+        .build-field { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:18px; }
+        .build-deck { position:relative; min-height:172px; padding:19px 17px 15px; border:3px solid ${T.ink}; border-radius:20px; background:${T.white}; box-shadow:5px 5px 0 ${T.ink}; text-align:left; cursor:pointer; transition:transform .15s, box-shadow .15s; overflow:hidden; }
+        .build-deck-strip { position:absolute; left:0; top:0; right:0; height:9px; background:${T.flame}; }
+        .build-deck:nth-child(3n+2) .build-deck-strip { background:${T.acid}; }
+        .build-deck:nth-child(3n) .build-deck-strip { background:${T.ink}; }
+        .build-deck:hover, .build-deck-open { transform:translateY(-4px); box-shadow:8px 8px 0 ${T.ink}; }
+        .build-deck-top { display:flex; justify-content:space-between; gap:12px; margin-top:6px; font:800 9px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing:.09em; text-transform:uppercase; color:${T.muted}; }
+        .build-deck strong { display:block; margin-top:20px; font:800 24px ui-sans-serif, Inter, sans-serif; letter-spacing:-.01em; }
+        .build-deck-text { display:block; margin-top:8px; font:14px/1.45 ui-sans-serif, Inter, sans-serif; color:#232019; }
+        .build-deck-action { display:block; margin-top:14px; font:800 9px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing:.12em; text-transform:uppercase; color:${T.flame}; }
+        .outside-grid { display:grid; grid-template-columns:1.05fr .95fr; gap:34px; align-items:start; }
+        .outside-note { padding:20px 0; border-top:3px solid ${T.ink}; border-bottom:3px solid ${T.ink}; font:16px/1.65 ui-sans-serif, Inter, sans-serif; color:#232019; }
+        .outside-note p { margin:0 0 16px; }
+        .outside-note p:last-child { margin-bottom:0; }
+        .interest-stack { display:flex; flex-wrap:wrap; gap:9px; }
+        .interest { display:inline-flex; align-items:center; gap:8px; border:3px solid ${T.ink}; border-radius:999px; padding:9px 13px; background:${T.white}; box-shadow:3px 3px 0 ${T.ink}; font:800 10px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing:.06em; text-transform:uppercase; transform:rotate(-1.5deg); }
+        .interest:nth-child(2) { background:${T.acid}; transform:rotate(1deg); }
+        .interest:nth-child(3) { background:${T.flame}; color:${T.white}; transform:rotate(-1deg); }
+        .interest:nth-child(4) { transform:rotate(1.5deg); }
+        .language-line { margin-top:28px; font:800 11px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing:.08em; text-transform:uppercase; color:${T.muted}; }
+        .end-sign { margin:42px 0 0; padding:26px 0; border-top:3px solid ${T.ink}; text-align:center; }
+        .end-sign h2 { margin:5px 0 13px; font:900 34px ui-sans-serif, Inter, sans-serif; letter-spacing:-.03em; text-transform:uppercase; }
+        .end-sign p { margin:0 auto; max-width:400px; font:15px/1.5 ui-sans-serif, Inter, sans-serif; color:${T.muted}; }
+        .contact-row { display:flex; justify-content:center; gap:12px; margin-top:22px; }
+        .contact-row a { display:inline-flex; align-items:center; gap:8px; border:3px solid ${T.ink}; border-radius:999px; padding:11px 17px; text-decoration:none; box-shadow:3px 3px 0 ${T.ink}; font:800 10px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing:.09em; text-transform:uppercase; }
+        .contact-row a:first-child { background:${T.flame}; color:${T.white}; }
+        .contact-row a:last-child { background:${T.ink}; color:${T.paper}; }
+        .a6-footer { padding:22px 0 36px; border-top:3px solid ${T.ink}; display:flex; justify-content:space-between; align-items:center; font:800 10px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing:.1em; text-transform:uppercase; color:${T.muted}; }
+        @media (max-width:760px) {
+          .a6-shell { padding:0 18px; }
+          .hero-grid { grid-template-columns:1fr; gap:32px; }
+          .hero-portrait { order:-1; }
+          .portrait-frame { max-width:220px; }
+          .journey-track { padding-left:52px; }
+          .journey-track::before { left:18px; }
+          .ride-board { left:-24px; transform:translateY(-30%) scale(.7); }
+          .track-current { margin-left:-36px; }
+          .build-field { grid-template-columns:1fr; }
+          .outside-grid { grid-template-columns:1fr; gap:26px; }
+          .work-row { grid-template-columns:16px 1fr; gap:8px; }
+          .work-row time { order:3; }
+          .work-row p { order:4; }
+          .a6-nav .nav-links { gap:10px; }
+          .a6-nav .nav-links a:nth-child(2) { display:none; }
+          .a6-nav .nav-links a:nth-child(3) { display:none; }
+          .hero-route-note { left:0; bottom:0; }
+        }
+      `}} />
 
-      {view === "boot" && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ background: theme.paper }}>
-          <div className="text-6xl mb-6" style={{ color: theme.coral }}>▶</div>
-          <div className="text-sm" style={{ color: theme.muted }}>loading portfolio...</div>
-          <div className="mt-4 w-48 h-1" style={{ background: theme.cream }}>
-            <div className="h-full" style={{ background: theme.coral, width: "100%", animation: "pulse-dot 1.6s ease-in-out infinite" }} />
+      <div className="a6-shell">
+        <nav className="a6-nav">
+          <a href="/" className="nav-brand"><i />nicole jiang</a>
+          <span>the skatepark · one ride</span>
+          <div className="nav-links"><a href="#background">background ↗</a><a href="#builds">builds ↗</a><a href="#outside">outside ↗</a></div>
+        </nav>
+
+        <section className="hero">
+          <div className="hero-grid">
+            <div className="hero-copy">
+              <div className="now-pill"><i /><b>right now</b><em>· building the BeSci Engine at algo1 · {now} London</em></div>
+              <h1>Nicole Jiang.</h1>
+              <p className="hero-role">Behavioural scientist. AI product builder. London.</p>
+              <p className="hero-summary">I work where <strong>human behavior meets what we build.</strong> I diagnose why people act as they do, find the pattern, decide what is worth making, and shape it so it feels good to use.</p>
+              <div className="hero-kicker"><span>behaviour</span><span>product</span><span>physical AI</span></div>
+              <div className="hero-cta-row">
+                <button className="drop-in" onClick={() => jumpTo("background")}><ArrowDown size={16} /> see the work</button>
+                <a className="drop-in drop-in-ghost" href="https://www.linkedin.com/in/nicole-jiang-567054201/" target="_blank" rel="noreferrer">linkedin <ArrowUpRight size={15} /></a>
+              </div>
+              <p className="hero-note">3 hackathon wins · 6 builds shipped · always rolling</p>
+              <div className="hero-stamps"><span>behaviour</span><span>product</span><span>AI</span><span>hardware</span></div>
+            </div>
+            <div className="hero-portrait">
+              <div className="portrait-frame">
+                <img src="/images/nicole-portrait.png" alt="Nicole Jiang" />
+                <span className="portrait-tag">nicole · london</span>
+              </div>
+              <div className="hero-route-note"><b>ride log / 01</b><span>smart ideas</span><span>shipped fast</span><span>with feeling</span></div>
+              <div className="portrait-deck"><Deck size={1.05} spin={started} /></div>
+            </div>
           </div>
+        </section>
+
+        <div className="grip-divider" />
+
+        <section className="journey-intro">
+          <div>
+            <p className="section-kicker">the ride</p>
+            <h2>Three spots. One line.</h2>
+          </div>
+          <p>Scroll to move the board. Each spot gives you a different view of the person behind the work.</p>
+          <div className="journey-map" aria-label="Three skatepark spots"><span className="journey-map-label">park map</span><i /><b /><i /><b /><i /></div>
+        </section>
+
+        <div className="journey-track" ref={trackRef}>
+          <div className="ride-board" style={{ top: `${Math.max(3, progress * 100)}%` }}><Deck spin={started} /></div>
+          <div className="track-current"><span>{SPOTS[activeIndex].number} · {SPOTS[activeIndex].label}</span></div>
+
+          <section ref={(el) => { refs.current.background = el; }} className="scene" id="background">
+            <SectionLead spot={SPOTS[0]} eyebrow="start here · the first push" />
+            <div className="scene-copy"><p>I'm a behavioural scientist at <strong>algo1</strong>, an AI startup in London building hyperpersonalized shopping for grocery retail. My job is to work out why people do what they do, design the product that shifts it, then prove whether it worked.</p><p>I came in through psychology, not code. Two degrees in how people think, followed by years spent using it to build real things. The interesting problem is always human before it is technical.</p></div>
+            <div className="work-list">{ROLES.map((role) => <div className="work-row" key={role.org}><span className="bolt" /><div><strong>{role.org}</strong><div className="role">{role.role}</div></div><time>{role.when}</time><p>{role.note}</p></div>)}</div>
+            <div className="through-line"><strong>The through-line:</strong> every product problem is a behavior problem first.</div>
+            <button className="drop-in" onClick={() => jumpTo("builds")}><ArrowDown size={16} /> next spot · what I build</button>
+          </section>
+
+          <section ref={(el) => { refs.current.builds = el; }} className="scene" id="builds">
+            <SectionLead spot={SPOTS[1]} eyebrow="keep rolling · the things I ship" />
+            <p className="build-intro">Most of these were built in a weekend, a few in five hours. Different domains, one instinct: find a real person with a real problem, then build the smallest thing that removes it.</p>
+            <div className="build-field">{BUILDS.map((build) => <BuildDeck key={build.name} build={build} open={openBuild === build.name} onClick={() => setOpenBuild(openBuild === build.name ? null : build.name)} />)}</div>
+            <button className="drop-in" onClick={() => jumpTo("outside")}><ArrowDown size={16} /> next spot · beyond the screen</button>
+          </section>
+
+          <section ref={(el) => { refs.current.outside = el; }} className="scene" id="outside">
+            <SectionLead spot={SPOTS[2]} eyebrow="last spot · what pulls me forward" />
+            <div className="outside-grid">
+              <div className="outside-note"><p>Lately I keep ending up in hardware. I clipped my first AI device to a cap at a build sprint and have not stopped since: Raspberry Pis, 3D printers, soldering my first board. After years of pixels, working with atoms is the most fun I have had in a while.</p><p>My evenings go to neuro and AI nights. Neural interfaces, whole-brain emulation, how minds fail and change. Watching how the brain actually works keeps reshaping how I think about why people are irrational.</p><p>Where I'm heading: human and AI interaction that people actually feel safe adopting, and eventually, a company of my own.</p></div>
+              <div><div className="interest-stack"><span className="interest"><Wrench size={15} /> physical AI</span><span className="interest"><Brain size={15} /> neurotech</span><span className="interest"><Camera size={15} /> visual thinking</span><span className="interest"><Target size={15} /> founder path</span></div><p className="language-line">中文 · native &nbsp; English · fluent &nbsp; 日本語 · conversational</p></div>
+            </div>
+            <div className="end-sign"><p className="section-kicker">session complete</p><h2>Keep in touch?</h2><p>The next build is always somewhere around the corner.</p><div className="contact-row"><a href="mailto:nicolejiang2324@gmail.com"><Mail size={15} /> email me</a><a href="https://www.linkedin.com/in/nicole-jiang-567054201/" target="_blank" rel="noreferrer"><ArrowUpRight size={15} /> linkedin</a></div></div>
+          </section>
         </div>
-      )}
 
-      {view === "play" && (
-        <>
-          {/* HUD top bar */}
-          <header
-            className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-6 py-4"
-            style={{ borderBottom: `1px dashed ${theme.ink}`, background: theme.paper }}
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-3 h-3 rounded-full pulse-dot" style={{ background: theme.coral }} />
-              <span className="text-sm font-bold tracking-wider">NICOLE JIANG</span>
-              <span className="text-xs" style={{ color: theme.muted }}>// behavioural product builder</span>
-            </div>
-            <nav className="flex items-center gap-4 text-xs">
-              <a href="#work" className="hover:underline">[1] WORK</a>
-              <a href="#engine" className="hover:underline">[2] ENGINE</a>
-              <a href="#vibe" className="hover:underline">[3] VIBE</a>
-              <a href="mailto:nicolejiang2324@gmail.com" className="px-3 py-1 border-2" style={{ borderColor: theme.ink, color: theme.ink }}>[C] CONTACT</a>
-            </nav>
-          </header>
-
-          {/* Hero / marquee */}
-          <section className="pt-24 px-6 pb-8">
-            <div className="max-w-6xl mx-auto">
-              <div className="text-xs mb-2" style={{ color: theme.muted }}>// file: nicole.exe  ·  v3.2  ·  last updated today</div>
-              <h1 className="text-5xl md:text-7xl font-bold leading-none mb-4" style={{ fontFamily: '"VT323", monospace' }}>
-                I build products that<br />
-                <span style={{ color: theme.coral }}>change behaviour</span>,
-                <span style={{ background: theme.yellow, padding: "0 8px" }}> not just screens</span>.
-              </h1>
-              <p className="text-base max-w-2xl mb-6" style={{ color: theme.inkSoft }}>
-                Product & behavioural science. 3+ years embedding COM-B, EAST, MINDSPACE into AI product strategy
-                at <span style={{ color: theme.coral, fontWeight: 700 }}>algo1.ai</span>. Hackathon-obsessed. Tinkering with robots, neurotech, and whatever else catches my eye.
-              </p>
-
-              {/* Stats ticker */}
-              <div className="flex flex-wrap gap-3 mb-6">
-                {stats.map((s) => {
-                  const Icon = s.icon;
-                  return (
-                    <div key={s.k} className="flex items-center gap-2 px-3 py-2 border-2" style={{ borderColor: theme.ink, boxShadow: theme.shadow }}>
-                      <Icon className="w-4 h-4" style={{ color: theme.coral }} />
-                      <span className="text-xs" style={{ color: theme.muted }}>{s.k}</span>
-                      <span className="text-sm font-bold">{s.v}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </section>
-
-          {/* The game: scroll horizontally by holding A/D or ←/→, press SPACE to score */}
-          <section id="work" className="relative py-6" style={{ background: theme.cream, borderTop: `2px solid ${theme.ink}`, borderBottom: `2px solid ${theme.ink}` }}>
-            <div className="max-w-6xl mx-auto px-6 mb-4 flex items-baseline justify-between">
-              <h2 className="text-2xl font-bold" style={{ fontFamily: '"VT323", monospace' }}>&gt; 5 HACKATHONS_SHIPPED</h2>
-              <div className="text-xs" style={{ color: theme.muted }}>use [A/D] or [←/→] to steer · [SPACE] to score</div>
-            </div>
-            <div
-              className="relative mx-auto overflow-hidden"
-              style={{ height: 280, background: theme.paper, borderTop: `1px dashed ${theme.ink}`, borderBottom: `1px dashed ${theme.ink}` }}
-            >
-              {/* ground line */}
-              <div className="absolute bottom-0 left-0 right-0 h-px" style={{ background: theme.ink }} />
-
-              {/* player */}
-              <div
-                ref={playerRef}
-                className="absolute bottom-2"
-                style={{ left: `${playerX}%`, transform: "translateX(-50%)", transition: "left 0.05s linear" }}
-              >
-                <div className="text-3xl float">🥷</div>
-              </div>
-
-              {/* obstacles / stars */}
-              {obstacles.map((o) => (
-                <div key={o.id} className="absolute text-2xl" style={{ left: `${o.x}%`, top: `${o.y}%` }}>
-                  {o.type === "star" ? "⭐" : "🕳️"}
-                </div>
-              ))}
-
-              {/* HUD score */}
-              <div className="absolute top-2 right-3 text-xs" style={{ color: theme.ink }}>
-                SCORE: <span className="font-bold" style={{ color: theme.coral }}>{Math.floor(score)}</span>
-              </div>
-            </div>
-
-            {/* Project cards row */}
-            <div className="max-w-6xl mx-auto px-6 mt-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {projects.map((p) => {
-                  const Icon = p.icon;
-                  const isHover = hovered === p.id;
-                  return (
-                    <div
-                      key={p.id}
-                      onMouseEnter={() => setHovered(p.id)}
-                      onMouseLeave={() => setHovered(null)}
-                      className="p-4 border-2 cursor-pointer"
-                      style={{
-                        borderColor: theme.ink,
-                        background: isHover ? theme.yellow : theme.paper,
-                        boxShadow: theme.shadow,
-                        transform: isHover ? "translate(-2px,-2px)" : "none",
-                        transition: "all 0.15s ease",
-                      }}
-                    >
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="text-3xl">{p.cover}</div>
-                        <div className="flex items-center gap-1">
-                          <Icon className="w-4 h-4" style={{ color: theme.coral }} />
-                          <span className="text-xs" style={{ color: theme.muted }}>{p.hours}</span>
-                        </div>
-                      </div>
-                      <div className="text-lg font-bold">{p.title}</div>
-                      <div className="text-xs mb-2" style={{ color: theme.muted }}>{p.subtitle}</div>
-                      <div className="text-xs mb-3" style={{ color: theme.inkSoft }}>{p.blurb}</div>
-                      <div className="flex flex-wrap gap-1 mb-2">
-                        {p.stack.map((s) => (
-                          <span key={s} className="text-[10px] px-1.5 py-0.5" style={{ background: theme.cream, border: `1px solid ${theme.ink}` }}>{s}</span>
-                        ))}
-                      </div>
-                      <div className="flex items-center justify-between text-[10px]">
-                        <span style={{ color: theme.muted }}>{p.track}</span>
-                        {p.win ? (
-                          <span className="px-1.5 py-0.5 font-bold" style={{ background: theme.lime, color: theme.ink }}>🏆 {p.prizes}</span>
-                        ) : (
-                          <span style={{ color: theme.muted }}>{p.prizes}</span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </section>
-
-          {/* Engine section: the 6 layers */}
-          <section id="engine" className="py-12 px-6" style={{ background: theme.paper }}>
-            <div className="max-w-6xl mx-auto">
-              <div className="text-xs mb-2" style={{ color: theme.muted }}>// proprietary</div>
-              <h2 className="text-3xl font-bold mb-2" style={{ fontFamily: '"VT323", monospace' }}>&gt; THE BESCI ENGINE</h2>
-              <p className="text-sm mb-6 max-w-2xl" style={{ color: theme.inkSoft }}>
-                The moat: I don't do insights &rarr; features. I do insights &rarr; diagnosis &rarr; intervention &rarr; test &rarr; document &rarr; govern.
-                Six layers, COM-B spine, IPC library underneath. Null results count.
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {layers.map((l) => (
-                  <div
-                    key={l.n}
-                    className="p-4 border-2 flex gap-3"
-                    style={{ borderColor: theme.ink, boxShadow: theme.shadow, background: theme.paper }}
-                  >
-                    <div className="text-3xl font-bold" style={{ color: theme.coral, fontFamily: '"VT323", monospace' }}>{l.n}</div>
-                    <div>
-                      <div className="text-base font-bold">{l.t}</div>
-                      <div className="text-xs" style={{ color: theme.inkSoft }}>{l.d}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          {/* Vibe section: my curiosity beyond work */}
-          <section id="vibe" className="py-12 px-6" style={{ background: theme.cream, borderTop: `2px solid ${theme.ink}` }}>
-            <div className="max-w-6xl mx-auto">
-              <div className="text-xs mb-2" style={{ color: theme.muted }}>// currently obsessing over</div>
-              <h2 className="text-3xl font-bold mb-6" style={{ fontFamily: '"VT323", monospace' }}>&gt; OFF_DUTY.exe</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                {interests.map((x) => {
-                  const Icon = x.i;
-                  return (
-                    <div key={x.t} className="p-4 border-2" style={{ borderColor: theme.ink, background: theme.paper, boxShadow: theme.shadow }}>
-                      <Icon className="w-6 h-6 mb-2" style={{ color: theme.coral }} />
-                      <div className="text-sm font-bold mb-1">{x.t}</div>
-                      <div className="text-xs" style={{ color: theme.inkSoft }}>{x.d}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </section>
-
-          {/* Footer */}
-          <footer className="py-8 px-6 text-center text-xs" style={{ color: theme.muted, background: theme.paper, borderTop: `1px dashed ${theme.ink}` }}>
-            <div className="mb-1">© nicole jiang · london, uk · last build: today</div>
-            <div>built by hand · powered by curiosity</div>
-          </footer>
-        </>
-      )}
+        <footer className="a6-footer"><span>nicole jiang · skatepark v2.0</span><span>london · 2026</span></footer>
+      </div>
     </main>
   );
 }
