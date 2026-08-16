@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { ArrowRight, Mic, Headphones, Compass, Gamepad2, Volume2, VolumeX, Sparkles, Cpu, Waves, Radio, Bot, Trophy, Zap, Clock, MapPin, Highlighter } from "lucide-react";
+import { useEffect, useRef, useState, type CSSProperties, type MouseEvent as ReactMouseEvent } from "react";
+import { ArrowRight, Mic, Headphones, Compass, Gamepad2, Volume2, VolumeX, Sparkles, Cpu, Waves, Radio, Bot, Trophy, Zap, Clock, MapPin } from "lucide-react";
 
 const theme = {
   paper: "#FAF7F0",
@@ -20,7 +20,7 @@ const projects = [
   { id: "tella", icon: Bot, cover: "🎙️", title: "Tella", subtitle: "Voice AI for elderly care", hours: "48h", track: "Productivity Top 3", prizes: "2 prizes", stack: ["ElevenLabs", "Anthropic", "Twilio", "ACI.dev"], blurb: "Proactive AI calls for the gaps between scheduled care visits. The smallest thing that removes the most pain.", win: true },
   { id: "donna", icon: Radio, cover: "📦", title: "donna.ai", subtitle: "Voice agent for delivery", hours: "5h", track: "Best Use of ElevenLabs", prizes: "1 prize", stack: ["ElevenLabs", "OpenAI", "Encord", "DeepMind", "Lovable"], blurb: "Real-time multimodal agent. Driver speaks, customer hears back before panic. 84% of broken delivery experiences = lost retailer customers.", win: true },
   { id: "vibify", icon: Headphones, cover: "🎧", title: "Vibify", subtitle: "Context-aware music recs", hours: "6h", track: "London AI Hack #2", prizes: "0 prizes", stack: ["Weaviate", "OpenAI", "Prolific", "ElevenLabs"], blurb: "Translates musical features into tokens, blends with weather + calendar. Match my vibe so I can get into flow.", win: false },
-  { id: "meditate", icon: Waves, cover: "🧘", title: "Mindful Pi", subtitle: "Offline meditation device", hours: "48h", track: "On-device AI Hackathon", prizes: "1 prize (Overmind track)", stack: ["Raspberry Pi", "Cognee", "Local LLM"], blurb: "No screen, no internet. The medium can't undermine the message. Local memory you choose to share.", win: true },
+  { id: "meditation", icon: Waves, cover: "🧘", title: "Mindful Pi", subtitle: "Offline meditation device", hours: "48h", track: "On-device AI Hackathon", prizes: "1 prize (Overmind track)", stack: ["Raspberry Pi", "Cognee", "Local LLM"], blurb: "No screen, no internet. The medium can't undermine the message. Local memory you choose to share.", win: true },
   { id: "repvoice", icon: Mic, cover: "💊", title: "RepVoice", subtitle: "Voice OS for pharma reps", hours: "48h", track: "Voice AI Hack London", prizes: "Top 3 in Productivity", stack: ["Gradium", "Speechmatics", "Thymia", "TinyFish"], blurb: "Speak your post-call summary. CRM fields, MHRA alerts, Veeva auto-fill, voice-brief on next visit. Voice in. Paperwork out.", win: true },
 ];
 
@@ -47,7 +47,7 @@ const layers = [
   { n: "06", t: "AI-loop", d: "Personalisation, decay, RL sequencing." },
 ];
 
-function Sticky({ text, rotate = -2, color = "yellow" as "yellow" | "pink" | "blue" }) {
+function Sticky({ text, rotate = -2, color = "yellow" }: { text: string; rotate?: number; color?: "yellow" | "pink" | "blue" }) {
   const colors = {
     yellow: { bg: "#F1C40F", text: "#1A1A1A" },
     pink: { bg: "#FFD6E0", text: "#1A1A1A" },
@@ -86,34 +86,38 @@ function Cursor() {
 
 function Coin({ x, y, delay = 0 }: { x: string; y: string; delay?: number }) {
   return (
-    <div aria-hidden className="pointer-events-none absolute text-2xl opacity-0" style={{ left: x, top: y, animation: `coinPop 1.6s ${delay}s ease-out forwards` }}>
+    <div aria-hidden className="pointer-events-none fixed z-[90] text-2xl opacity-0" style={{ left: x, top: y, animation: `coinPop 1.6s ${delay}s ease-out forwards` }}>
       <style>{`@keyframes coinPop { 0% { transform: translateY(0) scale(0); opacity: 0; } 20% { transform: translateY(-30px) scale(1); opacity: 1; } 80% { transform: translateY(-90px) scale(1) rotate(360deg); opacity: 1; } 100% { transform: translateY(-120px) scale(0.8) rotate(720deg); opacity: 0; } }`}</style>
       ✦
     </div>
   );
 }
 
-export default function Home() {
+export default function Play() {
   const [booted, setBooted] = useState(false);
   const [pressed, setPressed] = useState(false);
   const [soundOn, setSoundOn] = useState(false);
   const [hovered, setHovered] = useState<string | null>(null);
   const [coins, setCoins] = useState<{ id: number; x: string; y: string }[]>([]);
 
+  const timers = useRef<number[]>([]);
+  useEffect(() => () => { timers.current.forEach(window.clearTimeout); }, []);
+  const later = (fn: () => void, ms: number) => { timers.current.push(window.setTimeout(fn, ms)); };
+
   const handleStart = () => {
     setPressed(true);
-    setTimeout(() => setBooted(true), 600);
+    later(() => setBooted(true), 600);
   };
 
-  const triggerConfetti = (e: React.MouseEvent) => {
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+  const triggerConfetti = (e: ReactMouseEvent<HTMLElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
     const newCoins = Array.from({ length: 6 }).map((_, i) => ({ id: Date.now() + i, x: `${rect.left + Math.random() * rect.width}px`, y: `${rect.top}px` }));
     setCoins(newCoins);
-    setTimeout(() => setCoins([]), 1800);
+    later(() => setCoins([]), 1800);
   };
 
   return (
-    <main style={{ "--page-bg": theme.paper, "--page-fg": theme.ink, "--page-muted": theme.muted, "--page-coral": theme.coral, "--page-sky": theme.sky, "--page-lime": theme.lime, "--page-cream": theme.cream, "--page-yellow": theme.yellow, "--page-red": theme.red, "--page-navy": theme.navy } as React.CSSProperties} className="min-h-screen bg-[var(--page-bg)] text-[var(--page-fg)] font-sans antialiased">
+    <main style={{ "--page-bg": theme.paper, "--page-fg": theme.ink, "--page-muted": theme.muted, "--page-coral": theme.coral, "--page-sky": theme.sky, "--page-lime": theme.lime, "--page-cream": theme.cream, "--page-yellow": theme.yellow, "--page-red": theme.red, "--page-navy": theme.navy } as CSSProperties} className="min-h-screen bg-[var(--page-bg)] text-[var(--page-fg)] font-sans antialiased">
       <Cursor />
 
       <div aria-hidden className="pointer-events-none fixed inset-0 z-0 opacity-[0.04] mix-blend-multiply" style={{ backgroundImage: "radial-gradient(circle at 25% 25%, rgba(0,0,0,0.3) 1px, transparent 1px), radial-gradient(circle at 75% 75%, rgba(0,0,0,0.2) 1px, transparent 1px)", backgroundSize: "3px 3px, 5px 5px" }} />
@@ -268,11 +272,10 @@ export default function Home() {
 
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {projects.map((p) => {
-                  const Icon = p.icon;
                   return (
                     <a key={p.id} href={`/work#${p.id}`} onMouseEnter={() => setHovered(p.id)} onMouseLeave={() => setHovered(null)} className="group relative overflow-hidden rounded-2xl border-2 border-[#1A1A1A] bg-[#FAF7F0] p-6 transition hover:-translate-y-1" style={{ boxShadow: hovered === p.id ? "6px 6px 0 #1A1A1A" : "3px 3px 0 #1A1A1A" }}>
                       <div className="mb-4 flex items-start justify-between">
-                        <div className="text-5xl">{p.cover}</div>
+                        <div className="text-5xl" role="img" aria-label={p.title}>{p.cover}</div>
                         {p.win && (
                           <div className="flex items-center gap-1 rounded-full bg-[#B8E847] px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-widest text-[#1A1A1A]">
                             <Trophy className="size-2.5" /> won
@@ -373,8 +376,8 @@ export default function Home() {
             <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-4 px-6 text-sm text-[#7A7468] sm:flex-row sm:items-center sm:px-10">
               <div>© Nicole Jiang · London · v0.1 / build 142</div>
               <div className="flex gap-5 font-mono text-xs">
-                <a href="/" className="text-[#FF5C4D]">/play</a>
-                <a href="/spatial" className="hover:text-[#1A1A1A]">/spatial</a>
+                <a href="/play" className="text-[#FF5C4D]">/play</a>
+                <a href="/" className="hover:text-[#1A1A1A]">/home</a>
                 <a href="/lab" className="hover:text-[#1A1A1A]">/lab</a>
                 <a href="mailto:nicolejiang2324@gmail.com" className="hover:text-[#1A1A1A]">email</a>
                 <a href="https://www.linkedin.com/in/nicole-jiang-567054201/" target="_blank" rel="noreferrer" className="hover:text-[#1A1A1A]">linkedin</a>
