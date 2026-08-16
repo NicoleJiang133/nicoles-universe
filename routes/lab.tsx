@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "https://esm.sh/three@0.170.0";
-import { ArrowDown, ArrowUpRight, Brain, Camera, Cat, Compass, Gamepad2, Mail, Plane, Target, Trophy, Users, Wrench, X } from "lucide-react";
+import { ArrowDown, ArrowUpRight, Brain, Cat, Compass, Gamepad2, Mail, Plane, Trophy, Users, Wrench, X } from "lucide-react";
 
 const T = {
   paper: "#F4EDDE",
@@ -116,7 +116,17 @@ const PERSON_ROWS = [
   { id: "thread", icon: Brain, label: "current thread", note: "HRI and the trust layer" },
 ];
 
-const OUTSIDE_DETAILS = {
+type OutsideDetail = {
+  label: string;
+  title: string;
+  intro: string;
+  points: string[];
+  image?: string;
+  imageAlt?: string;
+  imageCap?: string;
+};
+
+const OUTSIDE_DETAILS: Record<string, OutsideDetail> = {
   manus: {
     label: "Manus Fellow",
     title: "Learning in public",
@@ -147,13 +157,7 @@ const OUTSIDE_DETAILS = {
     intro: "I am thinking about human–robot interaction and what makes people feel safe handing tasks to machines.",
     points: ["Trust is shaped by the interaction, not the model alone.", "Good physical AI should make its limits legible.", "The question I keep returning to: what should the human still feel in control of?"],
   },
-} as const;
-
-const POLAROIDS = [
-  { src: "/images/polaroid-cats.png", cap: "the cats" },
-  { src: "/images/polaroid-travel.png", cap: "somewhere new" },
-  { src: "/images/polaroid-food.png", cap: "a good dish" },
-];
+};
 
 function useLondonTime() {
   const [now, setNow] = useState("");
@@ -363,7 +367,7 @@ export default function Ride() {
 
   const detailRole = detail?.kind === "role" ? ROLES.find((r) => r.org === detail.id) : null;
   const detailBuild = detail?.kind === "build" ? BUILDS.find((b) => b.name === detail.id) : null;
-  const detailOutside = detail?.kind === "outside" ? OUTSIDE_DETAILS[detail.id as keyof typeof OUTSIDE_DETAILS] : null;
+  const detailOutside = detail?.kind === "outside" ? OUTSIDE_DETAILS[detail.id] : null;
   const detailStep = detailRole ? ROLES.findIndex((r) => r.org === detailRole.org) + 1 : detailBuild ? BUILDS.findIndex((b) => b.name === detailBuild.name) + 1 : detailOutside ? PERSON_ROWS.findIndex((r) => r.id === detail?.id) + 1 : 0;
   const detailTotal = detailRole ? ROLES.length : detailBuild ? BUILDS.length : detailOutside ? PERSON_ROWS.length : 0;
 
@@ -377,7 +381,6 @@ export default function Ride() {
       const y = window.scrollY;
       const vh = Math.max(window.innerHeight, 1);
       const lead = STOP_LEAD_VH * vh;
-      const trail = STOP_TRAIL_VH * vh;
       const setRide = (target: number) => { rideTargetRef.current = target; };
       const clearStop = (nextPhase: "approach" | "transit") => {
         setDetail(null);
@@ -842,10 +845,6 @@ export default function Ride() {
         .pk-person:nth-child(2n) .pk-person-ic { background: ${T.flame}; color: ${T.card}; }
         .pk-person b { font-size: 14px; line-height: 1.35; }
         .pk-person span:not(.pk-person-ic) { font-size: 13px; line-height: 1.45; }
-        .pk-polars { display: flex; gap: 10px; margin-top: 16px; }
-        .pk-polar { flex: 1; margin: 0; background: #fff; border: 3px solid ${T.ink}; border-radius: 10px; padding: 5px 5px 6px; box-shadow: 4px 4px 0 ${T.ink}; }
-        .pk-polar img { display: block; width: 100%; aspect-ratio: 4/5; object-fit: cover; border-radius: 6px; border: 2px solid rgba(20,20,20,.12); }
-        .pk-polar figcaption { margin-top: 5px; text-align: center; font: 800 8px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .08em; text-transform: uppercase; color: ${T.muted}; }
         .pk-stick { max-width: 400px; align-self: flex-start; }
         .pk-num-flame { background: ${T.flame}; color: ${T.card}; }
         .pk-note { width: 100%; resize: vertical; min-height: 88px; border: 3px solid ${T.ink}; border-radius: 14px; background: #fff; box-shadow: 3px 3px 0 ${T.ink}; padding: 11px 12px; font: 14px/1.5 ui-sans-serif, Inter, sans-serif; color: ${T.ink}; outline: none; }

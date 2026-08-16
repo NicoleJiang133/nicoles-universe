@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowUpRight, Brain, Camera, Compass, Mail, Target, Wrench } from "lucide-react";
 
 const T = {
@@ -206,6 +206,14 @@ export default function Home() {
         .hero-route-note { position:absolute; left:-42px; bottom:16px; width:122px; padding:10px 11px; border:3px solid ${T.ink}; background:${T.white}; box-shadow:4px 4px 0 ${T.ink}; transform:rotate(-6deg); font:800 9px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing:.05em; text-transform:uppercase; }
         .hero-route-note b { display:block; margin-bottom:6px; color:${T.flame}; }
         .hero-route-note span { display:block; color:${T.muted}; }
+        .grip-divider { height:12px; margin:0 0 46px; border-top:3px solid ${T.ink}; border-bottom:3px solid ${T.ink}; background:repeating-linear-gradient(90deg, ${T.ink} 0 7px, transparent 7px 14px); opacity:.9; }
+        .journey-intro { display:grid; grid-template-columns:auto 1fr; gap:10px 28px; align-items:end; padding-bottom:34px; }
+        .journey-intro h2 { margin:9px 0 0; font:900 clamp(28px,4.5vw,44px)/1.02 ui-sans-serif, Inter, sans-serif; letter-spacing:-.03em; text-transform:uppercase; }
+        .journey-intro p { margin:0; max-width:420px; font:15px/1.55 ui-sans-serif, Inter, sans-serif; color:#232019; }
+        .journey-intro .journey-map { grid-column:1 / -1; }
+        .deck-mark svg { display:block; animation:a6Bob 3.6s ease-in-out infinite; }
+        .deck-spin { animation:a6Spin .9s cubic-bezier(.4,.1,.3,1) both; }
+        .portrait-deck { position:absolute; right:-18px; bottom:-14px; z-index:2; pointer-events:none; }
         .journey-track { position:relative; padding-left:64px; }
         .journey-track::before { content:""; position:absolute; left:22px; top:6px; bottom:6px; width:4px; background:${T.ink}; opacity:.16; border-radius:2px; }
         .ride-board { position:absolute; left:-4px; z-index:2; width:64px; transform:translateY(-50%); transition:top .08s linear; pointer-events:none; }
@@ -278,6 +286,12 @@ export default function Home() {
           .a6-nav .nav-links a:nth-child(2) { display:none; }
           .a6-nav .nav-links a:nth-child(3) { display:none; }
           .hero-route-note { left:0; bottom:0; }
+          .journey-intro { grid-template-columns:1fr; align-items:start; gap:14px; }
+          .portrait-deck { right:-6px; bottom:-10px; transform:scale(.8); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .a6-page *, .a6-page *::before, .a6-page *::after { animation:none !important; transition:none !important; }
+          .ride-board { transition:none !important; }
         }
       `}} />
 
@@ -295,7 +309,6 @@ export default function Home() {
               <h1>Nicole Jiang.</h1>
               <p className="hero-role">Behavioural scientist. AI product builder. London.</p>
               <p className="hero-summary">I work where <strong>human behavior meets what we build.</strong> I diagnose why people act as they do, find the pattern, decide what is worth making, and shape it so it feels good to use.</p>
-              <div className="hero-kicker"><span>behaviour</span><span>product</span><span>physical AI</span></div>
               <div className="hero-cta-row">
                 <button className="drop-in" onClick={() => jumpTo("background")}><ArrowDown size={16} /> see the work</button>
                 <a className="drop-in drop-in-ghost" href="https://www.linkedin.com/in/nicole-jiang-567054201/" target="_blank" rel="noreferrer">linkedin <ArrowUpRight size={15} /></a>

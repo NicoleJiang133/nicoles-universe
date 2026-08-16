@@ -1,6 +1,7 @@
+import { appendFile } from "node:fs/promises";
 import type { Context } from "hono";
 
-const FILE = "/home/workspace/nicoles-universe/thoughts.jsonl";
+const FILE = process.env.THOUGHTS_FILE ?? "/home/workspace/nicoles-universe/thoughts.jsonl";
 
 const rate = new Map<string, number[]>();
 const WINDOW_MS = 10 * 60 * 1000;
@@ -8,11 +9,22 @@ const MAX_PER_WINDOW = 5;
 
 function limited(ip: string): boolean {
   const now = Date.now();
-  const hits = (rate.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
+  for (const [key, times] of rate) {
+    const live = times.filter((t) => now - t < WINDOW_MS);
+    if (live.length) rate.set(key, live);
+    else rate.delete(key);
+  }
+  const hits = rate.get(ip) ?? [];
   if (hits.length >= MAX_PER_WINDOW) return true;
   hits.push(now);
   rate.set(ip, hits);
   return false;
+}
+
+/** x-forwarded-for is a list; the client is the first entry. */
+function clientIp(c: Context): string {
+  const header = c.req.header("x-forwarded-for");
+  return header?.split(",")[0].trim() || "anon";
 }
 
 async function notifyNicole(text: string, from: string) {
@@ -39,8 +51,7 @@ async function notifyNicole(text: string, from: string) {
 export default async (c: Context) => {
   if (c.req.method !== "POST") return c.json({ ok: false, error: "method" }, 405);
 
-  const ip = c.req.header("x-forwarded-for") ?? "anon";
-  if (limited(ip)) return c.json({ ok: false, error: "slow down" }, 429);
+  if (limited(clientIp(c))) return c.json({ ok: false, error: "slow down" }, 429);
 
   let body: { text?: unknown; from?: unknown };
   try {
@@ -55,11 +66,12 @@ export default async (c: Context) => {
 
   const row = JSON.stringify({ ts: new Date().toISOString(), from, text }) + "\n";
   try {
-    await Bun.write(Bun.file(FILE), (await Bun.file(FILE).exists()) ? (await Bun.file(FILE).text()) + row : row);
+    // A single append, so two thoughts landing together cannot overwrite each other.
+    await appendFile(FILE, row, "utf8");
   } catch {
     return c.json({ ok: false, error: "store failed" }, 500);
   }
 
-  void notifyNicole(text, from).catch(() => {});
+  void notifyNicole(text, from);
   return c.json({ ok: true });
 };
