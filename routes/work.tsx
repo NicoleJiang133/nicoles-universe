@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { ArrowRight, ArrowLeft, Beaker, Radio, Sparkles, Headphones, Waves, Music2, Bot, Building2, Mic, BookOpen, Wrench } from "lucide-react";
 
 const theme = {
@@ -39,7 +40,7 @@ const hackathons = [
   {
     id: "tella",
     icon: Radio,
-    outcome: "Won 2 prize tracks · 48-hour MVP · still iterating",
+    badge: "Won 2 prize tracks · 48-hour MVP · still iterating",
     title: "Tella — voice AI for the gap between care visits",
     context: "AI Engine Hackathon · Aug 2025 · 3-person team",
     role: "Co-founder, product & behavioural design",
@@ -58,7 +59,7 @@ const hackathons = [
   {
     id: "donna",
     icon: Mic,
-    outcome: "Won Best Use of ElevenLabs · 5-hour build · 4 women",
+    badge: "Won Best Use of ElevenLabs · 5-hour build · 4 women",
     title: "donna.ai — a voice agent for the silence in delivery tracking",
     context: "AI for the Real World Hack · 4-person all-women team",
     role: "Product lead · user narrative · demo",
@@ -77,7 +78,7 @@ const hackathons = [
   {
     id: "meditation",
     icon: Waves,
-    outcome: "Won Overmind track · privacy as architecture, not feature",
+    badge: "Won Overmind track · privacy as architecture, not feature",
     title: "Offline meditation device — Raspberry Pi, no screen, no internet",
     context: "On-device AI Hackathon · 4-person team",
     role: "Behavioural & interaction design · memory personalisation",
@@ -95,7 +96,7 @@ const hackathons = [
   {
     id: "repvoice",
     icon: Headphones,
-    outcome: "Top 3 (Productivity track) · pharma-domain problem",
+    badge: "Top 3 (Productivity track) · pharma-domain problem",
     title: "RepVoice — voice AI OS for UK pharma field reps",
     context: "Voice AI Hack London · 4-person team",
     role: "Product lead · behavioural design",
@@ -113,7 +114,7 @@ const hackathons = [
   {
     id: "vibify",
     icon: Music2,
-    outcome: "6-hour MVP · user-research first",
+    badge: "6-hour MVP · user-research first",
     title: "Vibify — music recommender that knows your context, not just your genre",
     context: "London AI Hack #2 · 3-person team",
     role: "Lead PM · user research with Prolific",
@@ -136,7 +137,7 @@ const dayJob = [
   {
     id: "abc",
     icon: Building2,
-    outcome: "+20% engagement · +10% retention · +30% wellbeing",
+    badge: "+20% engagement · +10% retention · +30% wellbeing",
     title: "A/B-tested public-health nudges",
     where: "Applied Behaviour Change Consultancy · Jun 2024 – Mar 2025",
     role: "Product & Behavioural Science Associate (Intern)",
@@ -147,7 +148,7 @@ const dayJob = [
   {
     id: "wuhan",
     icon: Wrench,
-    outcome: "–50% workplace stress · +15% team productivity",
+    badge: "–50% workplace stress · +15% team productivity",
     title: "Workplace wellbeing intervention program",
     where: "Wuhan Yudian Psychological Counselling Co. · Apr 2022 – Sep 2023",
     role: "Behavioural Intervention Specialist",
@@ -158,7 +159,7 @@ const dayJob = [
   {
     id: "dtise",
     icon: BookOpen,
-    outcome: "+40% platform engagement · faster PMF",
+    badge: "+40% platform engagement · faster PMF",
     title: "Enterprise SaaS UX revamp",
     where: "DTise AI-Tech · Aug 2020 – Mar 2021",
     role: "Product Associate (UX Focused)",
@@ -205,7 +206,7 @@ export default function Work() {
           "--page-accent": theme.accent,
           "--page-accent-soft": theme.accentSoft,
           "--page-border": theme.border,
-        } as React.CSSProperties
+        } as CSSProperties
       }
       className="min-h-screen bg-[var(--page-bg)] text-[var(--page-fg)] font-sans antialiased"
     >
@@ -317,7 +318,7 @@ export default function Work() {
                   <Icon className="size-5" />
                 </div>
                 <p className="text-xs font-medium uppercase tracking-[0.18em] text-[var(--page-accent)]">
-                  0{i + 2} · Hackathon · {p.outcome}
+                  0{i + 2} · Hackathon · {p.badge}
                 </p>
               </div>
 
@@ -401,7 +402,7 @@ export default function Work() {
                       </div>
                     </div>
                     <p className="text-xs font-medium uppercase tracking-[0.16em] text-[var(--page-accent)]">
-                      {d.outcome}
+                      {d.badge}
                     </p>
                   </div>
                   <p className="mt-4 text-sm leading-relaxed text-[var(--page-fg)]/85 sm:text-base">
