@@ -1,4 +1,5 @@
-import { ArrowLeft, Mail, Linkedin, MessageSquare, Sparkles } from "lucide-react";
+import type { CSSProperties } from "react";
+import { ArrowLeft, Mail, MessageSquare, Sparkles } from "lucide-react";
 
 const theme = {
   bg: "#0a0e1a",
@@ -29,6 +30,15 @@ const asks = [
   },
 ];
 
+/** lucide dropped its brand icons, so the LinkedIn mark is inlined to stay version-proof. */
+function LinkedinMark({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
+      <path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3 9h4v12H3V9Zm6 0h3.8v1.7h.05A4.2 4.2 0 0 1 16.6 8.7c3.1 0 4.4 2 4.4 5.3V21h-4v-6.1c0-1.5-.5-2.5-1.9-2.5-1.1 0-1.8.8-2.1 1.5-.1.3-.1.7-.1 1V21H9V9Z" />
+    </svg>
+  );
+}
+
 const notYet = [
   "Recruiting for a large platform PM role (I can refer you to better people)",
   "Quick logo design or one-off content pieces",
@@ -48,7 +58,7 @@ export default function Contact() {
           "--page-accent": theme.accent,
           "--page-accent-soft": theme.accentSoft,
           "--page-border": theme.border,
-        } as React.CSSProperties
+        } as CSSProperties
       }
       className="min-h-screen bg-[var(--page-bg)] text-[var(--page-fg)] font-sans antialiased"
     >
@@ -149,7 +159,7 @@ export default function Contact() {
             className="group flex items-start gap-4 rounded-2xl border border-[var(--page-border)] bg-[var(--page-surface)] p-5 transition hover:border-[var(--page-accent)]/40"
           >
             <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[var(--page-accent-soft)] text-[var(--page-accent)]">
-              <Linkedin className="size-5" />
+              <LinkedinMark className="size-5" />
             </div>
             <div>
               <p className="text-sm font-medium">LinkedIn</p>

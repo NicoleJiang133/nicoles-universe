@@ -1,4 +1,5 @@
-import { ArrowLeft, ArrowRight, Sparkles, Cpu, Waves, Telescope, Brain, MessageCircle, Bot, Microscope } from "lucide-react";
+import type { CSSProperties } from "react";
+import { ArrowLeft, Sparkles, Cpu, Waves, Telescope, Brain, MessageCircle, Bot, Microscope } from "lucide-react";
 
 const theme = {
   bg: "#0a0e1a",
@@ -101,7 +102,7 @@ export default function About() {
           "--page-accent": theme.accent,
           "--page-accent-soft": theme.accentSoft,
           "--page-border": theme.border,
-        } as React.CSSProperties
+        } as CSSProperties
       }
       className="min-h-screen bg-[var(--page-bg)] text-[var(--page-fg)] font-sans antialiased"
     >
